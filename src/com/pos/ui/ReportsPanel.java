@@ -11,8 +11,8 @@ public class ReportsPanel extends JPanel {
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color summaryBlue = new Color(63, 81, 181);
     private final Color primaryPurple = new Color(156, 39, 176);
+    private final Color breadcrumbGray = new Color(100, 100, 100);
     private final Color primaryRed = new Color(211, 47, 47);
-    
     private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 14);
 
     private JPanel pnlGrid;
@@ -31,7 +31,7 @@ public class ReportsPanel extends JPanel {
         pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Reports");
-        lblBreadcrumb.setForeground(Color.GRAY);
+        lblBreadcrumb.setForeground(breadcrumbGray);
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         add(pnlHeader, BorderLayout.NORTH);
@@ -39,7 +39,7 @@ public class ReportsPanel extends JPanel {
         // --- Content Area ---
         JPanel pnlContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         pnlContent.setBackground(Color.WHITE);
-        pnlContent.setBorder(new EmptyBorder(10, 25, 25, 25));
+        pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
         pnlGrid = new JPanel(new GridLayout(0, 4, 20, 20)); // Base 4 columns
         pnlGrid.setOpaque(false);

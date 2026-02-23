@@ -9,6 +9,7 @@ import java.awt.event.ComponentEvent;
 public class ExpensesPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
+    private final Color breadcrumbGray = new Color(100, 100, 100);
     private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 14);
 
     private JPanel pnlGrid;
@@ -27,7 +28,7 @@ public class ExpensesPanel extends JPanel {
         pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Expenses");
-        lblBreadcrumb.setForeground(Color.GRAY);
+        lblBreadcrumb.setForeground(breadcrumbGray);
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         add(pnlHeader, BorderLayout.NORTH);
@@ -35,7 +36,7 @@ public class ExpensesPanel extends JPanel {
         // --- Content Area ---
         JPanel pnlContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         pnlContent.setBackground(Color.WHITE);
-        pnlContent.setBorder(new EmptyBorder(10, 25, 25, 25));
+        pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
         // Grid Area
         pnlGrid = new JPanel(new GridLayout(0, 4, 20, 20));

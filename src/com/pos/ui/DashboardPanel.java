@@ -12,6 +12,7 @@ public class DashboardPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color secondaryBg = new Color(245, 247, 250);
+    private final Color breadcrumbGray = new Color(100, 100, 100);
     private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 18);
     private final Font fontValue = new Font("Segoe UI", Font.BOLD, 22);
     private final Font fontLabel = new Font("Segoe UI", Font.PLAIN, 12);
@@ -33,7 +34,7 @@ public class DashboardPanel extends JPanel {
         pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Dashboard");
-        lblBreadcrumb.setForeground(Color.GRAY);
+        lblBreadcrumb.setForeground(breadcrumbGray);
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         add(pnlHeader, BorderLayout.NORTH);
@@ -42,7 +43,7 @@ public class DashboardPanel extends JPanel {
         JPanel pnlContent = new JPanel();
         pnlContent.setLayout(new BoxLayout(pnlContent, BoxLayout.Y_AXIS));
         pnlContent.setBackground(Color.WHITE);
-        pnlContent.setBorder(new EmptyBorder(10, 25, 25, 25));
+        pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
         // 1. Summary Cards (Top Row) - Now with dynamic columns
         pnlSummary = new JPanel(new GridLayout(0, 5, 15, 15));

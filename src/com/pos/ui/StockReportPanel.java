@@ -9,7 +9,7 @@ import java.awt.*;
 public class StockReportPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color darkBg = new Color(33, 37, 41);
+    private final Color breadcrumbGray = new Color(100, 100, 100);
     private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 12);
     private final Font fontLabel = new Font("Segoe UI", Font.PLAIN, 11);
 
@@ -25,8 +25,8 @@ public class StockReportPanel extends JPanel {
         pnlHeader.setBackground(Color.WHITE);
         pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
-        JLabel lblBreadcrumb = new JLabel("Main Panel > Item Stock Count");
-        lblBreadcrumb.setForeground(Color.GRAY);
+        JLabel lblBreadcrumb = new JLabel("Main Panel > Item Stock Report");
+        lblBreadcrumb.setForeground(breadcrumbGray);
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         JButton btnGenerate = new JButton("Generate Report");
@@ -42,7 +42,7 @@ public class StockReportPanel extends JPanel {
         // --- Content ---
         JPanel pnlContent = new JPanel(new BorderLayout(0, 20));
         pnlContent.setBackground(Color.WHITE);
-        pnlContent.setBorder(new EmptyBorder(10, 25, 25, 25));
+        pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
         // 1. Filters Row
         JPanel pnlFilters = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));

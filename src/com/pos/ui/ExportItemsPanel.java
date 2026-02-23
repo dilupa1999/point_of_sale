@@ -8,6 +8,7 @@ import java.awt.*;
 public class ExportItemsPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
+    private final Color breadcrumbGray = new Color(100, 100, 100);
     private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 14);
     private final Font fontLabel = new Font("Segoe UI", Font.PLAIN, 12);
 
@@ -24,7 +25,7 @@ public class ExportItemsPanel extends JPanel {
         pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Items > Export Items");
-        lblBreadcrumb.setForeground(Color.GRAY);
+        lblBreadcrumb.setForeground(breadcrumbGray);
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         add(pnlHeader, BorderLayout.NORTH);
@@ -32,7 +33,7 @@ public class ExportItemsPanel extends JPanel {
         // --- Content Area ---
         JPanel pnlContent = new JPanel(new BorderLayout(0, 20));
         pnlContent.setBackground(Color.WHITE);
-        pnlContent.setBorder(new EmptyBorder(10, 25, 25, 25));
+        pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
         // 1. Controls Section (Item Type Dropdown + Buttons)
         JPanel pnlControls = new JPanel(new BorderLayout());

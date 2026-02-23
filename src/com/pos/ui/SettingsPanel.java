@@ -7,6 +7,7 @@ import java.awt.*;
 public class SettingsPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
+    private final Color breadcrumbGray = new Color(100, 100, 100);
     private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 14);
 
     public SettingsPanel() {
@@ -22,7 +23,7 @@ public class SettingsPanel extends JPanel {
         pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Settings");
-        lblBreadcrumb.setForeground(Color.GRAY);
+        lblBreadcrumb.setForeground(breadcrumbGray);
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         add(pnlHeader, BorderLayout.NORTH);
@@ -30,7 +31,7 @@ public class SettingsPanel extends JPanel {
         // --- Content Area ---
         JPanel pnlContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         pnlContent.setBackground(Color.WHITE);
-        pnlContent.setBorder(new EmptyBorder(10, 25, 25, 25));
+        pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
         JPanel pnlCenter = new JPanel(new GridLayout(2, 3, 20, 20));
         pnlCenter.setOpaque(false);

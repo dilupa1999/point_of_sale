@@ -13,21 +13,21 @@ public class ItemsPanel extends JPanel {
 
     private JPanel pnlGrid;
 
-    public ItemsPanel() {
+    public ItemsPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
-        initComponents();
+        initComponents(mainFrame);
         setupResponsiveness();
     }
 
-    private void initComponents() {
+    private void initComponents(MainFrame mainFrame) {
         // --- Header / Breadcrumbs ---
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(Color.WHITE);
         pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Items");
-        lblBreadcrumb.setForeground(Color.GRAY);
+        lblBreadcrumb.setForeground(new Color(100, 100, 100));
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         add(pnlHeader, BorderLayout.NORTH);
@@ -35,18 +35,35 @@ public class ItemsPanel extends JPanel {
         // --- Content Area ---
         JPanel pnlContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         pnlContent.setBackground(Color.WHITE);
-        pnlContent.setBorder(new EmptyBorder(10, 25, 25, 25));
+        pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
         pnlGrid = new JPanel(new GridLayout(0, 4, 20, 20)); 
         pnlGrid.setOpaque(false);
 
         // Adding the Menu Cards
-        pnlGrid.add(createMenuCard("Add New Items", "AddItem"));
-        pnlGrid.add(createMenuCard("Add New Category", "AddCategory"));
-        pnlGrid.add(createMenuCard("Items List", "ItemList"));
-        pnlGrid.add(createMenuCard("Category List", "CategoryList"));
-        pnlGrid.add(createMenuCard("Import Item", "Import"));
-        pnlGrid.add(createMenuCard("Genarate QR/Barcode", "Barcode"));
+        JButton btnAddItems = createMenuCard("Add New Items", "AddItem");
+        btnAddItems.addActionListener(e -> mainFrame.showPanel("AddItems"));
+        pnlGrid.add(btnAddItems);
+        
+        JButton btnAddCategory = createMenuCard("Add New Category", "AddCategory");
+        btnAddCategory.addActionListener(e -> mainFrame.showPanel("AddCategory"));
+        pnlGrid.add(btnAddCategory);
+        
+        JButton btnItemsList = createMenuCard("Items List", "ItemList");
+        btnItemsList.addActionListener(e -> mainFrame.showPanel("ItemsList"));
+        pnlGrid.add(btnItemsList);
+        
+        JButton btnCategoryList = createMenuCard("Category List", "CategoryList");
+        btnCategoryList.addActionListener(e -> mainFrame.showPanel("CategoryList"));
+        pnlGrid.add(btnCategoryList);
+        
+        JButton btnImportItem = createMenuCard("Import Item", "Import");
+        btnImportItem.addActionListener(e -> mainFrame.showPanel("ImportItems"));
+        pnlGrid.add(btnImportItem);
+        
+        JButton btnBarcode = createMenuCard("Genarate QR/Barcode", "Barcode");
+        btnBarcode.addActionListener(e -> mainFrame.showPanel("Barcode"));
+        pnlGrid.add(btnBarcode);
 
         pnlContent.add(pnlGrid);
 

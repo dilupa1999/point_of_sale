@@ -27,7 +27,7 @@ public class CustomerPanel extends JPanel {
         pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Customer");
-        lblBreadcrumb.setForeground(Color.GRAY);
+        lblBreadcrumb.setForeground(new Color(100, 100, 100));
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         add(pnlHeader, BorderLayout.NORTH);
@@ -35,7 +35,7 @@ public class CustomerPanel extends JPanel {
         // --- Content Area ---
         JPanel pnlContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         pnlContent.setBackground(Color.WHITE);
-        pnlContent.setBorder(new EmptyBorder(10, 25, 25, 25));
+        pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
         // Grid Area
         pnlGrid = new JPanel(new GridLayout(0, 2, 20, 20));

@@ -10,7 +10,8 @@ public class DueAmountPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color secondaryGray = new Color(108, 117, 125);
-    private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 13);
+    private final Color breadcrumbGray = new Color(100, 100, 100);
+    private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 14);
     private final Font fontLabel = new Font("Segoe UI", Font.PLAIN, 12);
 
     public DueAmountPanel() {
@@ -25,8 +26,8 @@ public class DueAmountPanel extends JPanel {
         pnlHeader.setBackground(Color.WHITE);
         pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
-        JLabel lblBreadcrumb = new JLabel("Main Panel > Sales > Credit Customer");
-        lblBreadcrumb.setForeground(Color.GRAY);
+        JLabel lblBreadcrumb = new JLabel("Main Panel > Due Status");
+        lblBreadcrumb.setForeground(breadcrumbGray);
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         // Export Buttons (Top Right)
@@ -49,7 +50,7 @@ public class DueAmountPanel extends JPanel {
         // --- Content Area ---
         JPanel pnlContent = new JPanel(new BorderLayout(0, 15));
         pnlContent.setBackground(Color.WHITE);
-        pnlContent.setBorder(new EmptyBorder(10, 25, 25, 25));
+        pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
         // 1. Controls Row (Filter + Search)
         JPanel pnlControls = new JPanel(new BorderLayout());
@@ -87,7 +88,7 @@ public class DueAmountPanel extends JPanel {
         btnFilter.setPreferredSize(new Dimension(70, 32));
 
         JButton btnClear = new JButton("Clear");
-        btnClear.setBackground(secondaryGray);
+        btnClear.setBackground(Color.BLACK);
         btnClear.setForeground(Color.WHITE);
         btnClear.setFocusPainted(false);
         btnClear.setPreferredSize(new Dimension(70, 32));

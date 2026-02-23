@@ -20,8 +20,7 @@ public class MainFrame extends JFrame {
         setTitle("Retail Supermarket POS - Management System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        // setLayout(new BorderLayout()); // Moved to initComponents
-
+        
         initComponents();
     }
 
@@ -46,9 +45,7 @@ public class MainFrame extends JFrame {
         for (String item : menuItems) {
             JButton btn = createSidebarButton(item, item, sidebarBg, Color.GRAY);
             pnlSidebar.add(btn);
-            // pnlSidebarItems.add(Box.createVerticalStrut(2)); // Removed
             
-            // Default active
             if (item.equals("Dashboard")) {
                 setActiveButton(btn);
             }
@@ -57,11 +54,10 @@ public class MainFrame extends JFrame {
         JScrollPane scrollSidebar = new JScrollPane(pnlSidebar);
         scrollSidebar.setBorder(null);
         scrollSidebar.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollSidebar.getVerticalScrollBar().setUnitIncrement(16); // Changed
-        // scrollSidebar.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0)); // Removed
+        scrollSidebar.getVerticalScrollBar().setUnitIncrement(16);
         pnlSidebarContainer.add(scrollSidebar, BorderLayout.CENTER);
 
-        // Sidebar Navigation Helper (Bottom Arrows) // New section
+        // Sidebar Navigation Helper (Bottom Arrows)
         JPanel pnlNav = new JPanel(new GridLayout(1, 2));
         pnlNav.setPreferredSize(new Dimension(0, 40));
         JButton btnUp = new JButton("<"); btnUp.setBackground(sidebarBg);
@@ -79,57 +75,63 @@ public class MainFrame extends JFrame {
         // Add Panels
         mainContent.add(new DashboardPanel(), "Dashboard");
         mainContent.add(new POSPanel(), "POS");
-        mainContent.add(new ItemsPanel(), "Items");
+        mainContent.add(new ItemsPanel(this), "Items");
         mainContent.add(new ExportItemsPanel(), "Export");
         mainContent.add(new StockPanel(), "Stock");
         mainContent.add(new SalesPanel(), "Sales");
         mainContent.add(new DueAmountPanel(), "Due");
-        mainContent.add(new UsersPanel(), "Users");
+        mainContent.add(new UsersPanel(this), "Users");
         mainContent.add(new CustomerPanel(), "Customer");
         mainContent.add(new SuppliersPanel(), "Suppliers");
         mainContent.add(new ExpensesPanel(), "Expenses");
         mainContent.add(new ReportsPanel(), "Reports");
         mainContent.add(new SettingsPanel(), "Settings");
         mainContent.add(new StockReportPanel(), "StockReport"); 
+        mainContent.add(new AddItemsPanel(this), "AddItems");
+        mainContent.add(new AddCategoryPanel(this), "AddCategory");
+        mainContent.add(new ItemsListPanel(this), "ItemsList");
+        mainContent.add(new CategoryListPanel(this), "CategoryList");
+        mainContent.add(new ImportItemsPanel(this), "ImportItems");
+        mainContent.add(new BarcodePanel(this), "Barcode");
+        mainContent.add(new AddUserPanel(this), "AddUser");
+        mainContent.add(new AddRolePanel(this), "AddRole");
+        mainContent.add(new AddPermissionPanel(this), "AddPermission");
+        mainContent.add(new UsersListPanel(this), "UsersList");
+        mainContent.add(new RolesListPanel(this), "RolesList");
+        mainContent.add(new PermissionListPanel(this), "PermissionList");
         
-        // Placeholders for other sections
-        String[] others = {}; 
-        for(String s : others) {
-            JPanel p = new JPanel(new GridBagLayout());
-            p.add(new JLabel("Welcome to " + s + " Section"));
-            mainContent.add(p, s);
-        }
-
         add(mainContent, BorderLayout.CENTER);
 
         // --- Footer ---
         JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        pnlFooter.setBackground(footerGreen); // Changed color
-        pnlFooter.setPreferredSize(new Dimension(0, 35)); // New preferred size
-        JLabel lblFooterText = new JLabel("2026 \u00a9 All Rights Reserved | Designed and Developed by Silicon Radon Networks (Pvt) Ltd"); // Changed text
+        pnlFooter.setBackground(footerGreen);
+        pnlFooter.setPreferredSize(new Dimension(0, 35));
+        JLabel lblFooterText = new JLabel("2026 \u00a9 All Rights Reserved | Designed and Developed by Silicon Radon Networks (Pvt) Ltd");
         lblFooterText.setForeground(Color.WHITE);
-        lblFooterText.setFont(new Font("Segoe UI", Font.PLAIN, 11)); // Changed font
+        lblFooterText.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         pnlFooter.add(lblFooterText);
         add(pnlFooter, BorderLayout.SOUTH);
     }
 
-    private JButton createSidebarButton(String text, String iconType, Color bg, Color fg) { // Changed signature
-        JButton btn = new JButton(new SidebarIcon(iconType, 24, 24, fg)); // Changed icon color
+    public void showPanel(String name) {
+        cardLayout.show(mainContent, name);
+    }
+
+    private JButton createSidebarButton(String text, String iconType, Color bg, Color fg) {
+        JButton btn = new JButton(new SidebarIcon(iconType, 24, 24, fg));
         btn.setText("<html><center>" + text + "</center></html>");
         btn.setVerticalTextPosition(SwingConstants.BOTTOM);
         btn.setHorizontalTextPosition(SwingConstants.CENTER);
-        btn.setPreferredSize(new Dimension(100, 80)); // Changed size
-        btn.setMaximumSize(new Dimension(100, 80)); // Changed size
+        btn.setPreferredSize(new Dimension(100, 80));
+        btn.setMaximumSize(new Dimension(100, 80));
         btn.setFocusPainted(false);
-        // btn.setBorderPainted(false); // Removed
-        // btn.setContentAreaFilled(false); // Removed
         btn.setOpaque(true);
-        btn.setBackground(bg); // Changed to use parameter
-        btn.setForeground(fg); // Changed to use parameter
-        btn.setBorder(new LineBorder(new Color(235, 235, 240), 1)); // New border
-        btn.setFont(fontSidebar); // Changed font
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setBorder(new LineBorder(new Color(235, 235, 240), 1));
+        btn.setFont(fontSidebar);
 
-        btn.addMouseListener(new java.awt.event.MouseAdapter() { // New mouse listener
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 if (btn != activeButton) btn.setBackground(new Color(230, 230, 240));
             }
@@ -139,24 +141,24 @@ public class MainFrame extends JFrame {
         });
 
         btn.addActionListener(e -> {
-            setActiveButton(btn); // Changed method name
-            cardLayout.show(mainContent, text); // Changed to use text
+            setActiveButton(btn);
+            cardLayout.show(mainContent, text);
         });
 
         return btn;
     }
 
-    private void setActiveButton(JButton btn) { // Renamed from setActive
-        if (activeButton != null) { // Renamed from activeSidebarBtn
-            activeButton.setBackground(sidebarBg); // Renamed
-            activeButton.setForeground(Color.GRAY); // New
-            ((SidebarIcon)activeButton.getIcon()).setColor(Color.GRAY); // New
+    private void setActiveButton(JButton btn) {
+        if (activeButton != null) {
+            activeButton.setBackground(sidebarBg);
+            activeButton.setForeground(Color.GRAY);
+            ((SidebarIcon)activeButton.getIcon()).setColor(Color.GRAY);
         }
-        activeButton = btn; // Renamed
-        btn.setBackground(activeBlue); // Changed color
-        activeButton.setForeground(Color.WHITE); // New
-        ((SidebarIcon)activeButton.getIcon()).setColor(Color.WHITE); // New
-        activeButton.repaint(); // New
+        activeButton = btn;
+        btn.setBackground(activeBlue);
+        activeButton.setForeground(Color.WHITE);
+        ((SidebarIcon)activeButton.getIcon()).setColor(Color.WHITE);
+        activeButton.repaint();
     }
 
     public static void main(String[] args) {
@@ -260,7 +262,7 @@ public class MainFrame extends JFrame {
                     for(int i=0; i<8; i++) {
                         double a = i * Math.PI / 4;
                         g2.drawLine((int)(cx+5*Math.cos(a)), (int)(cy+5*Math.sin(a)), 
-                                    (int)(cx+8*Math.cos(a)), (int)(cy+8*Math.sin(a)));
+                                     (int)(cx+8*Math.cos(a)), (int)(cy+8*Math.sin(a)));
                     }
                     break;
                 default:

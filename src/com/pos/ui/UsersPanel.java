@@ -12,8 +12,10 @@ public class UsersPanel extends JPanel {
     private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 14);
 
     private JPanel pnlGrid;
+    private MainFrame mainFrame;
 
-    public UsersPanel() {
+    public UsersPanel(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         initComponents();
@@ -27,7 +29,7 @@ public class UsersPanel extends JPanel {
         pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Users");
-        lblBreadcrumb.setForeground(Color.GRAY);
+        lblBreadcrumb.setForeground(new Color(100, 100, 100));
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         add(pnlHeader, BorderLayout.NORTH);
@@ -35,19 +37,36 @@ public class UsersPanel extends JPanel {
         // --- Content Area ---
         JPanel pnlContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         pnlContent.setBackground(Color.WHITE);
-        pnlContent.setBorder(new EmptyBorder(10, 25, 25, 25));
+        pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
         // Grid Area
         pnlGrid = new JPanel(new GridLayout(0, 3, 20, 20));
         pnlGrid.setOpaque(false);
 
         // Adding the Menu Cards
-        pnlGrid.add(createMenuCard("Add New User", "AddUser"));
-        pnlGrid.add(createMenuCard("Add New Role", "AddRole"));
-        pnlGrid.add(createMenuCard("Add New Permission", "AddPermission"));
-        pnlGrid.add(createMenuCard("Users List", "UsersList"));
-        pnlGrid.add(createMenuCard("Roles List", "RolesList"));
-        pnlGrid.add(createMenuCard("Permission List", "PermissionList"));
+        JButton btnAddUser = createMenuCard("Add New User", "AddUser");
+        btnAddUser.addActionListener(e -> mainFrame.showPanel("AddUser"));
+        pnlGrid.add(btnAddUser);
+        
+        JButton btnAddRole = createMenuCard("Add New Role", "AddRole");
+        btnAddRole.addActionListener(e -> mainFrame.showPanel("AddRole"));
+        pnlGrid.add(btnAddRole);
+        
+        JButton btnAddPermission = createMenuCard("Add New Permission", "AddPermission");
+        btnAddPermission.addActionListener(e -> mainFrame.showPanel("AddPermission"));
+        pnlGrid.add(btnAddPermission);
+        
+        JButton btnUsersList = createMenuCard("Users List", "UsersList");
+        btnUsersList.addActionListener(e -> mainFrame.showPanel("UsersList"));
+        pnlGrid.add(btnUsersList);
+        
+        JButton btnRolesList = createMenuCard("Roles List", "RolesList");
+        btnRolesList.addActionListener(e -> mainFrame.showPanel("RolesList"));
+        pnlGrid.add(btnRolesList);
+        
+        JButton btnPermissionList = createMenuCard("Permission List", "PermissionList");
+        btnPermissionList.addActionListener(e -> mainFrame.showPanel("PermissionList"));
+        pnlGrid.add(btnPermissionList);
 
         pnlContent.add(pnlGrid);
 
