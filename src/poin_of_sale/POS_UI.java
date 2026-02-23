@@ -27,7 +27,8 @@ public class POS_UI extends JFrame {
     // Logic Components
     private DefaultTableModel model;
     private JTextField txtInput;
-    private JButton btnEnter; // Declared as field to avoid scoping issues
+    private JButton btnEnter; // Declared as field for scoping
+    private JButton activeSidebarBtn; // Track active menu item
     
     public POS_UI() {
         initComponents();
@@ -111,6 +112,16 @@ public class POS_UI extends JFrame {
         pnlMain.add(createRightPane(), gbc);
 
         add(pnlMain, BorderLayout.CENTER);
+
+        // --- Footer ---
+        JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        pnlFooter.setBackground(new Color(0, 70, 0)); // Dark green footer
+        JLabel lblFooterText = new JLabel("2026 © All Rights Reserved Designed and Developed by Silicon Radon Networks (Pvt) Ltd ");
+        lblFooterText.setForeground(Color.WHITE);
+        lblFooterText.setFont(fontBold12);
+        pnlFooter.add(lblFooterText);
+
+        add(pnlFooter, BorderLayout.SOUTH);
     }
 
     private JPanel createLeftPane() {
@@ -119,82 +130,60 @@ public class POS_UI extends JFrame {
         
         btnEnter = new JButton("PAY"); // Initialize the field
 
-        // 1. Sidebar (Icons)
-        JPanel pnlSidebar = new JPanel();
-        pnlSidebar.setLayout(new BoxLayout(pnlSidebar, BoxLayout.Y_AXIS));
-        pnlSidebar.setBackground(Color.WHITE);
-        pnlSidebar.setPreferredSize(new Dimension(90, 0)); // Slightly wider for better icon spacing
-        
-        // Define sidebar items: Text, IconType
-        String[][] items = {
-            {"Discount", "Discount"},
+        // 1. Sidebar (New Scrollable Navigation)
+        JPanel pnlSidebarContainer = new JPanel(new BorderLayout());
+        pnlSidebarContainer.setPreferredSize(new Dimension(100, 0));
+        pnlSidebarContainer.setBackground(new Color(10, 50, 90));
+        pnlSidebarContainer.setBorder(new EmptyBorder(0, 0, 0, 1));
+
+        JPanel pnlSidebarContent = new JPanel();
+        pnlSidebarContent.setLayout(new BoxLayout(pnlSidebarContent, BoxLayout.Y_AXIS));
+        pnlSidebarContent.setBackground(new Color(10, 50, 90));
+
+        String[][] menuItems = {
+            {"Dashboard", "Dashboard"},
+            {"Items", "Items"},
+            {"Export Items", "Export"},
             {"Stock", "Stock"},
+            {"Sales", "Sales"},
+            {"Due Amount", "Due"},
+            {"POS", "POS"},
+            {"Users", "Users"},
             {"Customer", "Customer"},
-            {"Search(F2)", "Search"},
-            {"Receipt", "Receipt"},
-            {"Void", "Void"},
-            {"Price Check", "PriceTag"},
-            {"Print", "Print"}
+            {"Suppliers", "Suppliers"},
+            {"Expenses", "Expenses"},
+            {"Reports", "Reports"},
+            {"Settings", "Settings"},
+            {"Stock Report", "StockReport"}
         };
 
-        for (String[] item : items) {
+        for (String[] item : menuItems) {
             String txt = item[0];
             String type = item[1];
             
-            boolean isActive = txt.equals("Customer");
-            Color fg = isActive ? Color.WHITE : Color.GRAY;
-            Color bg = isActive ? new Color(10, 50, 90) : Color.WHITE;
+            JButton btn = createSidebarButton(txt, type, new Color(10, 50, 90), Color.WHITE);
             
-            JButton btn = new JButton(new VectorIcon(type, 32, 28, fg));
-            btn.setText("<html><center>" + txt + "</center></html>");
-            btn.setVerticalTextPosition(SwingConstants.BOTTOM);
-            btn.setHorizontalTextPosition(SwingConstants.CENTER);
-            btn.setPreferredSize(new Dimension(80, 75));
-            btn.setMaximumSize(new Dimension(80, 75));
-            btn.setAlignmentX(Component.CENTER_ALIGNMENT);
-            btn.setFocusPainted(false);
-            btn.setBackground(bg);
-            btn.setForeground(fg);
-            btn.setFont(new Font("Segoe UI", Font.PLAIN, 10)); // Small font for labels
-            btn.setBorder(new LineBorder(new Color(240,240,240), 1));
-            
-            btn.setBorder(new LineBorder(new Color(240,240,240), 1));
-            
-            if (type.equals("Receipt")) {
-                btn.addActionListener(e -> showReceiptDialog());
+            // Set POS as default active
+            if (txt.equals("POS")) {
+                activeSidebarBtn = btn;
+                btn.setBackground(new Color(40, 180, 80)); 
             }
             
-            pnlSidebar.add(Box.createVerticalStrut(5));
-            pnlSidebar.add(btn);
+            pnlSidebarContent.add(btn);
+            pnlSidebarContent.add(Box.createVerticalStrut(2));
         }
         
-        // Add glue to push bottom buttons down
-        pnlSidebar.add(Box.createVerticalGlue());
+        JScrollPane scrollSidebar = new JScrollPane(pnlSidebarContent);
+        scrollSidebar.setBorder(null);
+        scrollSidebar.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollSidebar.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollSidebar.setOpaque(false);
+        scrollSidebar.getViewport().setOpaque(false);
+        scrollSidebar.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0)); // Hidden but scrollable
+        scrollSidebar.getVerticalScrollBar().setUnitIncrement(16);
         
-        // Bottom Navigation arrows (< >)
-        // Bottom Navigation arrows ( < > )
-        JPanel pnlSideNav = new JPanel(new GridLayout(1, 2, 8, 0)); 
-        pnlSideNav.setBackground(Color.WHITE);
-        pnlSideNav.setBorder(new EmptyBorder(5, 8, 5, 8)); // Balanced padding
-        pnlSideNav.setMaximumSize(new Dimension(90, 50)); // Approx 40px height for buttons
-        
-        // Smaller Icons for Navigation
-        JButton btnPrev = new JButton(new VectorIcon("ChevronLeft", 10, 16, new Color(10, 50, 90)));
-        btnPrev.setBackground(new Color(235, 235, 235));
-        btnPrev.setBorder(null);
-        btnPrev.setFocusPainted(false);
-        
-        JButton btnNext = new JButton(new VectorIcon("ChevronRight", 10, 16, new Color(10, 50, 90)));
-        btnNext.setBackground(new Color(235, 235, 235));
-        btnNext.setBorder(null);
-        btnNext.setFocusPainted(false);
-        
-        pnlSideNav.add(btnPrev);
-        pnlSideNav.add(btnNext);
-        pnlSidebar.add(pnlSideNav);
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        panel.add(pnlSidebar, BorderLayout.WEST);
+        pnlSidebarContainer.add(scrollSidebar, BorderLayout.CENTER);
+        panel.add(pnlSidebarContainer, BorderLayout.WEST);
 
         // 2. Center of Left Pane (Table + Keypad)
         JPanel pnlCenterLeft = new JPanel(new BorderLayout(5, 5));
@@ -655,6 +644,39 @@ public class POS_UI extends JFrame {
         return btn;
     }
 
+    private JButton createSidebarButton(String text, String iconType, Color bg, Color fg) {
+        JButton btn = new JButton(new VectorIcon(iconType, 24, 24, fg));
+        btn.setText("<html><center>" + text + "</center></html>");
+        btn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        btn.setHorizontalTextPosition(SwingConstants.CENTER);
+        btn.setPreferredSize(new Dimension(90, 75));
+        btn.setMaximumSize(new Dimension(90, 75));
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setOpaque(true);
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                if (btn != activeSidebarBtn) btn.setBackground(bg.brighter());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                if (btn != activeSidebarBtn) btn.setBackground(bg);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                if (activeSidebarBtn != null) activeSidebarBtn.setBackground(bg);
+                activeSidebarBtn = btn;
+                btn.setBackground(new Color(40, 180, 80)); // Green for active
+            }
+        });
+        
+        return btn;
+    }
+
     // --- Vector Icon Class ---
     private static class VectorIcon implements Icon {
         private final String type;
@@ -686,17 +708,88 @@ public class POS_UI extends JFrame {
                 case "User": // Header user
                 case "Customer": // Sidebar customer
                     g2.drawOval(cx - 6, 2, 12, 12); // Head
-                    g2.drawArc(cx - 10, 16, 20, 20, 0, 180); // Body (upside down arc?) No, standard arc 0 to 180 is bottom half... 
-                    // Actually arc(x,y,w,h, start, extent). 0 is 3 oclock. 180 is 9 oclock.
-                    // To draw shoulders:
-                    g2.drawArc(cx - 10, 16, 20, 14, 0, 180); // Actually wait, 0-180 is top half.
-                    // Let's manually draw a curve for shoulders.
-                    g2.draw(new Arc2D.Float(cx - 10, 14, 20, 20, 0, 180, Arc2D.OPEN)); // Flipped?
-                    // Let's keep it simple: Circle + Arc
+                    g2.drawArc(cx - 10, 16, 20, 14, 0, 180); 
                     g2.fillOval(cx-5, 4, 10, 10);
                     g2.fillArc(cx-10, 16, 20, 14, 0, 180); 
                     break;
-                    
+                case "Dashboard":
+                    g2.fillRect(cx-7, cy-7, 6, 6);
+                    g2.fillRect(cx+1, cy-7, 6, 6);
+                    g2.fillRect(cx-7, cy+1, 6, 6);
+                    g2.fillRect(cx+1, cy+1, 6, 6);
+                    break;
+                case "Items":
+                    for(int i=-1; i<=1; i++) 
+                        for(int j=-1; j<=1; j++)
+                            g2.fillRect(cx+i*5-2, cy+j*5-2, 4, 4);
+                    break;
+                case "Export":
+                    g2.drawRect(cx-6, cy-2, 12, 8);
+                    g2.drawLine(cx, cy-2, cx, cy-8);
+                    g2.drawLine(cx, cy-8, cx-3, cy-5);
+                    g2.drawLine(cx, cy-8, cx+3, cy-5);
+                    break;
+                case "Sales":
+                    g2.drawLine(cx-7, cy+5, cx-2, cy);
+                    g2.drawLine(cx-2, cy, cx+2, cy+3);
+                    g2.drawLine(cx+2, cy+3, cx+7, cy-5);
+                    g2.drawLine(cx+7, cy-5, cx+3, cy-5);
+                    g2.drawLine(cx+7, cy-5, cx+7, cy-1);
+                    break;
+                case "Due":
+                    g2.drawRect(cx-6, cy-8, 12, 16);
+                    g2.drawLine(cx-3, cy-4, cx+3, cy-4);
+                    g2.drawOval(cx-3, cy, 6, 6);
+                    break;
+                case "POS": 
+                    g2.drawRect(cx-6, cy-8, 12, 16);
+                    g2.drawRect(cx-4, cy-6, 8, 4);
+                    g2.fillRect(cx-4, cy, 2, 2);
+                    g2.fillRect(cx-1, cy, 2, 2);
+                    g2.fillRect(cx+2, cy, 2, 2);
+                    g2.fillRect(cx-4, cy+3, 2, 2);
+                    g2.fillRect(cx-1, cy+3, 2, 2);
+                    g2.fillRect(cx+2, cy+3, 2, 2);
+                    break;
+                case "Users":
+                    g2.drawOval(cx-7, cy-5, 6, 6);
+                    g2.drawArc(cx-10, cy+1, 10, 8, 0, 180);
+                    g2.drawOval(cx+1, cy-5, 6, 6);
+                    g2.drawArc(cx-2, cy+1, 10, 8, 0, 180);
+                    break;
+                case "Suppliers":
+                    g2.drawRect(cx-8, cy-4, 10, 8);
+                    g2.drawRect(cx+2, cy, 6, 4);
+                    g2.drawOval(cx-6, cy+4, 4, 4);
+                    g2.drawOval(cx+3, cy+4, 4, 4);
+                    break;
+                case "Expenses":
+                    g2.drawLine(cx-7, cy-5, cx-2, cy+3);
+                    g2.drawLine(cx-2, cy+3, cx+2, cy);
+                    g2.drawLine(cx+2, cy, cx+7, cy+5);
+                    g2.drawLine(cx+7, cy+5, cx+3, cy+5);
+                    g2.drawLine(cx+7, cy+5, cx+7, cy+1);
+                    break;
+                case "Reports":
+                    g2.drawRect(cx-6, cy-8, 12, 16);
+                    g2.drawLine(cx-3, cy-2, cx+3, cy-2);
+                    g2.drawLine(cx-3, cy+2, cx+3, cy+2);
+                    g2.drawLine(cx-3, cy+6, cx+1, cy+6);
+                    break;
+                case "Settings":
+                    g2.drawOval(cx-5, cy-5, 10, 10);
+                    for(int a=0; a<360; a+=45) {
+                        double r1 = 5, r2 = 8;
+                        double rad = Math.toRadians(a);
+                        g2.drawLine((int)(cx+r1*Math.cos(rad)), (int)(cy+r1*Math.sin(rad)), 
+                                    (int)(cx+r2*Math.cos(rad)), (int)(cy+r2*Math.sin(rad)));
+                    }
+                    break;
+                case "StockReport":
+                    g2.drawRect(cx-7, cy-8, 14, 16);
+                    g2.drawOval(cx-3, cy-3, 6, 6);
+                    g2.drawLine(cx+2, cy+2, cx+5, cy+5);
+                    break;
                 case "Discount": // % icon
                     Font f = new Font("Segoe UI", Font.BOLD, s-8);
                     g2.setFont(f);
@@ -1022,7 +1115,18 @@ public class POS_UI extends JFrame {
                 dialog.dispose();
                 model.setRowCount(0);
             });
-            dialog.add(btnClose, BorderLayout.SOUTH);
+            JPanel pnlDialogFooter = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            pnlDialogFooter.setBackground(new Color(0, 70, 0)); // Dark green footer
+            JLabel lblDialogFooterText = new JLabel();
+            lblDialogFooterText.setForeground(Color.WHITE);
+            lblDialogFooterText.setFont(fontBold12);
+            pnlDialogFooter.add(lblDialogFooterText);
+
+            JPanel pnlBottomDialog = new JPanel(new BorderLayout());
+            pnlBottomDialog.add(btnClose, BorderLayout.NORTH);
+            pnlBottomDialog.add(pnlDialogFooter, BorderLayout.SOUTH);
+            
+            dialog.add(pnlBottomDialog, BorderLayout.SOUTH);
 
             dialog.setVisible(true);
         } catch (Exception ex) {

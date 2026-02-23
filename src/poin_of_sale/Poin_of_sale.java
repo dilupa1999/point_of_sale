@@ -28,7 +28,7 @@ public class Poin_of_sale {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new POS_UI().setVisible(true);
+                new com.pos.ui.MainFrame().setVisible(true);
             }
         });
     }
