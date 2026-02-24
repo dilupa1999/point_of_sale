@@ -86,7 +86,7 @@ public class MainFrame extends JFrame {
         mainContent.add(new SuppliersPanel(this), "Suppliers");
         mainContent.add(new ExpensesPanel(this), "Expenses");
         mainContent.add(new ReportsPanel(this), "Reports");
-        mainContent.add(new SettingsPanel(), "Settings");
+        mainContent.add(new SettingsPanel(this), "Settings");
         mainContent.add(new StockReportPanel(this), "StockReport"); 
         mainContent.add(new AddItemsPanel(this), "AddItems");
         mainContent.add(new AddCategoryPanel(this), "AddCategory");
@@ -120,6 +120,9 @@ public class MainFrame extends JFrame {
         mainContent.add(new ItemReportPanel(this), "ItemReport");
         mainContent.add(new SalesReportPanel(this), "SalesReport");
         mainContent.add(new ExpensesReportPanel(this), "ExpensesReport");
+        mainContent.add(new SiteSettingsPanel(this), "SiteSettings");
+        mainContent.add(new ChangePasswordPanel(this), "ChangePassword");
+        mainContent.add(new ChangeSitePanel(this), "ChangeSite");
         
         add(mainContent, BorderLayout.CENTER);
 

@@ -8,15 +8,14 @@ public class SettingsPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color breadcrumbGray = new Color(100, 100, 100);
-    private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 14);
 
-    public SettingsPanel() {
+    public SettingsPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
-        initComponents();
+        initComponents(mainFrame);
     }
 
-    private void initComponents() {
+    private void initComponents(MainFrame mainFrame) {
         // --- Header / Breadcrumbs ---
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(Color.WHITE);
@@ -29,40 +28,46 @@ public class SettingsPanel extends JPanel {
         add(pnlHeader, BorderLayout.NORTH);
 
         // --- Content Area ---
-        JPanel pnlContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        JPanel pnlContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 100));
         pnlContent.setBackground(Color.WHITE);
         pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
-        JPanel pnlCenter = new JPanel(new GridLayout(2, 3, 20, 20));
+        JPanel pnlCenter = new JPanel(new GridLayout(1, 3, 20, 20));
         pnlCenter.setOpaque(false);
+        
+        JButton btnSite = createMenuCard("Site Settings", "Site", primaryBlue);
+        btnSite.addActionListener(e -> mainFrame.showPanel("SiteSettings"));
+        
+        JButton btnPass = createMenuCard("Change Password", "Password", primaryBlue);
+        btnPass.addActionListener(e -> mainFrame.showPanel("ChangePassword"));
+        
+        JButton btnChangeSite = createMenuCard("Change Site", "ChangeSite", primaryBlue);
+        btnChangeSite.addActionListener(e -> mainFrame.showPanel("ChangeSite"));
 
-        pnlCenter.add(createMenuCard("Company Settings", "Settings"));
-        pnlCenter.add(createMenuCard("User Profile", "User"));
-        pnlCenter.add(createMenuCard("Database Backup", "Database"));
-        pnlCenter.add(createMenuCard("Tax Settings", "Tax"));
-        pnlCenter.add(createMenuCard("Printer Config", "Printer"));
-        pnlCenter.add(createMenuCard("System Logs", "Logs"));
+        pnlCenter.add(btnSite);
+        pnlCenter.add(btnPass);
+        pnlCenter.add(btnChangeSite);
 
         pnlContent.add(pnlCenter);
 
         add(new JScrollPane(pnlContent), BorderLayout.CENTER);
     }
 
-    private JButton createMenuCard(String title, String iconType) {
+    private JButton createMenuCard(String title, String iconType, Color bgColor) {
         JButton btn = new JButton(new SettingsMenuIcon(iconType, 48, 48, Color.WHITE));
         btn.setText("<html><center>" + title + "</center></html>");
         btn.setVerticalTextPosition(SwingConstants.BOTTOM);
         btn.setHorizontalTextPosition(SwingConstants.CENTER);
-        btn.setPreferredSize(new Dimension(200, 210));
-        btn.setBackground(primaryBlue);
+        btn.setPreferredSize(new Dimension(210, 220));
+        btn.setBackground(bgColor);
         btn.setForeground(Color.WHITE);
-        btn.setFont(fontTitle);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setFocusPainted(false);
-        btn.setBorder(new EmptyBorder(10, 10, 10, 10));
+        btn.setBorder(new EmptyBorder(10, 10, 20, 10));
         
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) { btn.setBackground(primaryBlue.darker()); }
-            public void mouseExited(java.awt.event.MouseEvent evt) { btn.setBackground(primaryBlue); }
+            public void mouseEntered(java.awt.event.MouseEvent evt) { btn.setBackground(bgColor.darker()); }
+            public void mouseExited(java.awt.event.MouseEvent evt) { btn.setBackground(bgColor); }
         });
 
         return btn;
@@ -79,9 +84,39 @@ public class SettingsPanel extends JPanel {
             g2.translate(x, y);
             int cx = w / 2; int cy = h / 2;
             switch(type) {
-                case "Settings": g2.drawOval(cx-8, cy-8, 16, 16); break;
-                case "User": g2.drawOval(cx-6, cy-10, 12, 12); g2.drawArc(cx-12, cy+2, 24, 12, 0, 180); break;
-                default: g2.drawRect(cx-10, cy-10, 20, 20); break;
+                case "Settings": 
+                    g2.drawOval(cx-12, cy-12, 24, 24); 
+                    g2.drawOval(cx-4, cy-4, 8, 8); 
+                    break;
+                case "User": 
+                    g2.drawOval(cx-8, cy-14, 16, 16); 
+                    g2.drawArc(cx-16, cy+2, 32, 16, 0, 180); 
+                    break;
+                case "Database":
+                    g2.drawOval(cx-14, cy-14, 28, 12);
+                    g2.drawLine(cx-14, cy-8, cx-14, cy+8);
+                    g2.drawLine(cx+14, cy-8, cx+14, cy+8);
+                    g2.drawArc(cx-14, cy+2, 28, 12, 180, 180);
+                    break;
+                case "Site":
+                    g2.drawRect(cx-15, cy-12, 30, 24);
+                    g2.drawLine(cx-15, cy-4, cx+15, cy-4);
+                    g2.drawOval(cx-4, cy+2, 8, 8);
+                    break;
+                case "Password":
+                    g2.drawRect(cx-12, cy-4, 24, 18);
+                    g2.drawArc(cx-8, cy-14, 16, 20, 0, 180);
+                    g2.drawLine(cx, cy+2, cx, cy+8);
+                    break;
+                case "ChangeSite":
+                    g2.drawOval(cx-12, cy-12, 24, 24);
+                    g2.drawArc(cx-16, cy-16, 32, 32, 45, 270);
+                    g2.drawLine(cx+8, cy-12, cx+16, cy-16);
+                    g2.drawLine(cx+8, cy-12, cx+12, cy-4);
+                    break;
+                default: 
+                    g2.drawRoundRect(cx-14, cy-14, 28, 28, 5, 5); 
+                    break;
             }
             g2.dispose();
         }
