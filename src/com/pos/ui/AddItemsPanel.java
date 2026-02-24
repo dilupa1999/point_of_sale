@@ -106,11 +106,19 @@ public class AddItemsPanel extends JPanel {
         addFormField(pnlForm, "Barcode", new JTextField("Barcode No"), 1, 0, 1);
         addFormField(pnlForm, "Item name", new JTextField("Your Item name"), 2, 0, 1);
         addFormField(pnlForm, "Singlish Name (For POS Search)", new JTextField("Enter Singlish name (e.g., Kos, Pol, Ric)"), 3, 0, 1);
-        addFormField(pnlForm, "Category", new JComboBox<>(new String[]{"Select category"}), 4, 0, 1);
+        
+        JComboBox<String> comboCat = new JComboBox<>(new String[]{"Select category", "Dairy Products", "Vegetables", "Bakery", "Drinks", "Fruits", "Snacks", "Beverages", "Spices", "Grains", "Frozen Foods", "Meat", "Pharmacy"});
+        SearchableComboBox.install(comboCat);
+        addFormField(pnlForm, "Category", comboCat, 4, 0, 1);
 
         // Row 1
-        addFormField(pnlForm, "Supplier", new JComboBox<>(new String[]{"Your supplier name"}), 0, 1, 1);
-        addFormField(pnlForm, "Unit Type", new JComboBox<>(new String[]{"Select unit type"}), 1, 1, 1);
+        JComboBox<String> comboSupplier = new JComboBox<>(new String[]{"Your supplier name", "Global Distributors", "Fresh Farms", "National Trading", "Premium Goods", "Local Suppliers"});
+        SearchableComboBox.install(comboSupplier);
+        addFormField(pnlForm, "Supplier", comboSupplier, 0, 1, 1);
+        
+        JComboBox<String> comboUnit = new JComboBox<>(new String[]{"Select unit type", "Pieces", "Kg", "Gram", "Litre", "MilliLitre", "Packet", "Box", "Bottle", "Bundle"});
+        SearchableComboBox.install(comboUnit);
+        addFormField(pnlForm, "Unit Type", comboUnit, 1, 1, 1);
         addFormField(pnlForm, "Quantity", new JTextField("Enter Qty"), 2, 1, 1);
         addFormField(pnlForm, "Minimum Quantity", new JTextField("Enter Minimum Qty"), 3, 1, 1);
         addFormField(pnlForm, "Purchase Price", new JTextField("Enter purchase price"), 4, 1, 1);

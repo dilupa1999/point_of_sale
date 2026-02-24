@@ -19,15 +19,15 @@ public class SearchableComboBox {
         private final List<String> originalItems;
         private boolean isFiltering = false;
 
-        public SearchableComboInstance(JComboBox<String> comboBox) {
+        public SearchableComboInstance(final JComboBox<String> comboBox) {
             this.comboBox = comboBox;
             this.originalItems = new ArrayList<>();
             for (int i = 0; i < comboBox.getItemCount(); i++) {
-                originalItems.add(comboBox.getItemAt(i));
+                originalItems.add(comboBox.getItemAt(i).toString());
             }
 
             comboBox.setEditable(true);
-            JTextField textField = (JTextField) comboBox.getEditor().getEditorComponent();
+            final JTextField textField = (JTextField) comboBox.getEditor().getEditorComponent();
 
             textField.getDocument().addDocumentListener(new DocumentListener() {
                 @Override public void insertUpdate(DocumentEvent e) { filter(); }
@@ -36,29 +36,35 @@ public class SearchableComboBox {
 
                 private void filter() {
                     if (isFiltering) return;
-                    String text = textField.getText();
+                    final String text = textField.getText();
                     
-                    EventQueue.invokeLater(() -> {
-                        isFiltering = true;
-                        comboBox.removeAllItems();
-                        for (String item : originalItems) {
-                            if (item.toLowerCase().contains(text.toLowerCase())) {
-                                comboBox.addItem(item);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            isFiltering = true;
+                            comboBox.removeAllItems();
+                            for (String item : originalItems) {
+                                if (item.toLowerCase().contains(text.toLowerCase())) {
+                                    comboBox.addItem(item);
+                                }
                             }
+                            textField.setText(text);
+                            if (comboBox.getItemCount() > 0) {
+                                comboBox.setPopupVisible(true);
+                            }
+                            isFiltering = false;
                         }
-                        textField.setText(text);
-                        if (comboBox.getItemCount() > 0) {
-                            comboBox.setPopupVisible(true);
-                        }
-                        isFiltering = false;
                     });
                 }
             });
 
             // Handle selection
-            comboBox.addActionListener(e -> {
-                if (!isFiltering && comboBox.getSelectedItem() != null) {
-                    textField.setText(comboBox.getSelectedItem().toString());
+            comboBox.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (!isFiltering && comboBox.getSelectedItem() != null) {
+                        textField.setText(comboBox.getSelectedItem().toString());
+                    }
                 }
             });
             

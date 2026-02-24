@@ -104,7 +104,9 @@ public class AddUserPanel extends JPanel {
 
         gbc.gridy = 3;
         gbc.gridx = 0;
-        pnlForm.add(createComboBox(new String[]{"Select gender", "Male", "Female", "Other"}), gbc);
+        JComboBox<String> comboGender = createComboBox(new String[]{"Select gender", "Male", "Female", "Other"});
+        SearchableComboBox.install(comboGender);
+        pnlForm.add(comboGender, gbc);
         gbc.gridx = 1;
         pnlForm.add(createTextField("superadmin@gmail.com"), gbc);
 
@@ -128,7 +130,9 @@ public class AddUserPanel extends JPanel {
 
         gbc.gridy = 7;
         gbc.gridx = 0;
-        pnlForm.add(createComboBox(new String[]{"Select Role", "Admin", "User", "Cashier"}), gbc);
+        JComboBox<String> comboRole = createComboBox(new String[]{"Select Role", "Admin", "User", "Cashier", "Manager", "Supervisor", "Inventory Clerk"});
+        SearchableComboBox.install(comboRole);
+        pnlForm.add(comboRole, gbc);
 
         // Row 5: Buttons
         gbc.gridy = 8;

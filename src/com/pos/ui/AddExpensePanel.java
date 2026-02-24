@@ -109,7 +109,8 @@ public class AddExpensePanel extends JPanel {
         gbc.gridwidth = 2;
         pnlForm.add(createLabel("Expense Category"), gbc);
         gbc.gridy = 3;
-        JComboBox<String> comboCategory = new JComboBox<>(new String[]{"Select expense category", "Electricity", "Water", "Rent", "Salaries"});
+        JComboBox<String> comboCategory = new JComboBox<>(new String[]{"Select expense category", "Electricity", "Water", "Rent", "Salaries", "Marketing", "Utility", "Maintenance", "Repair", "Taxes", "Insurance"});
+        SearchableComboBox.install(comboCategory);
         comboCategory.setPreferredSize(new Dimension(0, 45));
         comboCategory.setBackground(fieldBg);
         comboCategory.setBorder(new LineBorder(new Color(230, 230, 235)));
