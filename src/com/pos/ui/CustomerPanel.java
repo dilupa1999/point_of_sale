@@ -13,14 +13,14 @@ public class CustomerPanel extends JPanel {
 
     private JPanel pnlGrid;
 
-    public CustomerPanel() {
+    public CustomerPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
-        initComponents();
+        initComponents(mainFrame);
         setupResponsiveness();
     }
 
-    private void initComponents() {
+    private void initComponents(MainFrame mainFrame) {
         // --- Header / Breadcrumbs ---
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(Color.WHITE);
@@ -42,10 +42,16 @@ public class CustomerPanel extends JPanel {
         pnlGrid.setOpaque(false);
 
         // Adding the Menu Cards
-        pnlGrid.add(createMenuCard("Add New Customer", "AddUser"));
-        pnlGrid.add(createMenuCard("Customer List", "UsersList"));
-        pnlGrid.add(createMenuCard("Customer Groups", "AddRole"));
-        pnlGrid.add(createMenuCard("Import Customers", "Import"));
+        JButton btnAddCustomer = createMenuCard("Add New Customer", "AddUser");
+        btnAddCustomer.addActionListener(e -> mainFrame.showPanel("AddCustomer"));
+        pnlGrid.add(btnAddCustomer);
+
+        JButton btnCustomerList = createMenuCard("Customer List", "UsersList");
+        btnCustomerList.addActionListener(e -> mainFrame.showPanel("CustomerList"));
+        pnlGrid.add(btnCustomerList);
+        JButton btnImportCustomer = createMenuCard("Import Customers", "Import");
+        btnImportCustomer.addActionListener(e -> mainFrame.showPanel("ImportCustomer"));
+        pnlGrid.add(btnImportCustomer);
 
         pnlContent.add(pnlGrid);
 
@@ -126,11 +132,6 @@ public class CustomerPanel extends JPanel {
                     g2.drawLine(cx+2, cy-10, cx+15, cy-10);
                     g2.drawLine(cx+2, cy, cx+15, cy);
                     g2.drawLine(cx+2, cy+5, cx+15, cy+5);
-                    break;
-                case "AddRole":
-                    g2.drawOval(cx-12, cy-8, 10, 10);
-                    g2.drawOval(cx+2, cy-8, 10, 10);
-                    g2.drawArc(cx-15, cy, 30, 15, 0, 180);
                     break;
                 case "Import":
                     g2.drawRect(cx-10, cy-6, 20, 16);

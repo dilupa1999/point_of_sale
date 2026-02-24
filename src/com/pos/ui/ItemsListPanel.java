@@ -19,11 +19,15 @@ public class ItemsListPanel extends JPanel {
 
     private JTable table;
     private DefaultTableModel tableModel;
+    private JPanel pnlSearch;
+    private JPanel pnlSort;
+    private JPanel pnlFiltersRow;
 
     public ItemsListPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         initComponents(mainFrame);
+        setupResponsiveness();
     }
 
     private void initComponents(MainFrame mainFrame) {
@@ -60,16 +64,11 @@ public class ItemsListPanel extends JPanel {
 
         JPanel pnlTopRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
         pnlTopRight.setOpaque(false);
-        JLabel lblWelcome = new JLabel("<html><div style='text-align: right;'><span style='font-size: 16px; font-weight: bold;'>Good Evening!</span><br>Welcome Pos System</div></html>");
+        JLabel lblWelcome = new JLabel("<html><div style='text-align: right;'><span style='font-size: 16px; font-weight: bold;'>Good Morning!</span><br>Welcome Hypermart</div></html>");
         lblWelcome.setForeground(Color.WHITE);
         
-        JButton btnPower = new JButton("\u23FB");
+        JButton btnPower = createHeaderButton("\u23FB", true);
         btnPower.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        btnPower.setForeground(Color.BLACK);
-        btnPower.setBackground(Color.WHITE);
-        btnPower.setPreferredSize(new Dimension(40, 40));
-        btnPower.setFocusPainted(false);
-        btnPower.setBorder(null);
 
         pnlTopRight.add(lblWelcome);
         pnlTopRight.add(btnPower);
@@ -84,47 +83,52 @@ public class ItemsListPanel extends JPanel {
         // Breadcrumbs & Column Visibility
         JPanel pnlTopActions = new JPanel(new BorderLayout());
         pnlTopActions.setOpaque(false);
-        pnlTopActions.setBorder(new EmptyBorder(10, 20, 0, 20));
+        pnlTopActions.setBorder(new EmptyBorder(10, 25, 0, 25));
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Items > Items List");
-        lblBreadcrumb.setForeground(new Color(100, 100, 100)); // Darker gray for better visibility
+        lblBreadcrumb.setForeground(new Color(100, 100, 100));
         lblBreadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         pnlTopActions.add(lblBreadcrumb, BorderLayout.WEST);
 
-        JButton btnColVisibility = createActionButton("Column Visibility", tableHeaderGreen);
-        btnColVisibility.setPreferredSize(new Dimension(150, 35));
+        JButton btnColVisibility = createMiniButton("Column Visibility", tableHeaderGreen);
         pnlTopActions.add(btnColVisibility, BorderLayout.EAST);
 
         pnlMain.add(pnlTopActions, BorderLayout.NORTH);
 
         // Search & Filter Header
-        JPanel pnlFilters = new JPanel(new BorderLayout());
-        pnlFilters.setBackground(Color.WHITE);
-        pnlFilters.setBorder(new EmptyBorder(15, 20, 15, 20));
+        pnlFiltersRow = new JPanel(new BorderLayout());
+        pnlFiltersRow.setBackground(Color.WHITE);
+        pnlFiltersRow.setBorder(new EmptyBorder(15, 25, 15, 25));
 
-        // Left Filters (Search)
-        JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        // Row 1: Search (Left) and Sort (Right)
+        pnlSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         pnlSearch.setOpaque(false);
         pnlSearch.add(new JLabel("Search"));
-        JTextField txtSearch = new JTextField(15);
-        txtSearch.setPreferredSize(new Dimension(0, 35));
+        JTextField txtSearch = new JTextField("Enter item name");
+        txtSearch.setPreferredSize(new Dimension(300, 40));
+        txtSearch.setForeground(Color.GRAY);
+        txtSearch.setBorder(new LineBorder(new Color(230, 230, 235)));
         pnlSearch.add(txtSearch);
-        pnlSearch.add(createActionButton("Search", vibrantGreen));
-        pnlSearch.add(createActionButton("Reset", tableHeaderGreen));
-        pnlFilters.add(pnlSearch, BorderLayout.WEST);
+        pnlSearch.add(createMiniButton("Search", vibrantGreen));
+        pnlSearch.add(createMiniButton("Reset", tableHeaderGreen));
+        pnlFiltersRow.add(pnlSearch, BorderLayout.WEST);
 
-        // Right Filters (Sort)
-        JPanel pnlSort = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        pnlSort = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
         pnlSort.setOpaque(false);
         pnlSort.add(new JLabel("Sort by:"));
-        pnlSort.add(new JComboBox<>(new String[]{"Item Code", "Item Name", "Price"}));
-        pnlSort.add(new JComboBox<>(new String[]{"Ascending", "Descending"}));
-        pnlFilters.add(pnlSort, BorderLayout.EAST);
+        JComboBox<String> comboSort = new JComboBox<>(new String[]{"Item Code", "Item Name", "Price"});
+        styleDropdown(comboSort);
+        pnlSort.add(comboSort);
+        
+        JComboBox<String> comboOrder = new JComboBox<>(new String[]{"Ascending", "Descending"});
+        styleDropdown(comboOrder);
+        pnlSort.add(comboOrder);
+        pnlFiltersRow.add(pnlSort, BorderLayout.EAST);
 
         JPanel pnlTableContainer = new JPanel(new BorderLayout());
         pnlTableContainer.setBackground(Color.WHITE);
-        pnlTableContainer.setBorder(new EmptyBorder(0, 40, 40, 40)); // Added space around the table body
-        pnlTableContainer.add(pnlFilters, BorderLayout.NORTH);
+        pnlTableContainer.setBorder(new EmptyBorder(0, 25, 25, 25));
+        pnlTableContainer.add(pnlFiltersRow, BorderLayout.NORTH);
 
         // --- Table ---
         String[] columns = {"ITEM CODE", "ITEM IMAGE", "ITEM NAME - (SINGLISH NAME IF ANY)", "QTY", "UNIT TYPE", "STATUS", "MANAGE"};
@@ -143,14 +147,14 @@ public class ItemsListPanel extends JPanel {
 
         // Styling Table Header
         JTableHeader header = table.getTableHeader();
-        header.setPreferredSize(new Dimension(0, 40));
+        header.setPreferredSize(new Dimension(0, 45));
         header.setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 lbl.setBackground(tableHeaderGreen);
                 lbl.setForeground(Color.WHITE);
-                lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);
                 lbl.setOpaque(true);
                 lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.WHITE));
@@ -169,10 +173,7 @@ public class ItemsListPanel extends JPanel {
             }
         });
 
-        // Special Renderer for Manage and Status columns would go here
         setupTableRenderers();
-
-        // Sample Data
         addSampleData();
 
         JScrollPane scrollPane = new JScrollPane(table);
@@ -184,26 +185,60 @@ public class ItemsListPanel extends JPanel {
         add(pnlMain, BorderLayout.CENTER);
     }
 
-    private void setupTableRenderers() {
-        table.getColumnModel().getColumn(5).setCellRenderer(new StatusRenderer()); // Status
-        table.getColumnModel().getColumn(6).setCellRenderer(new ManageRenderer()); // Manage
-        
-        // Set column widths
-        table.getColumnModel().getColumn(0).setPreferredWidth(80);
-        table.getColumnModel().getColumn(4).setPreferredWidth(80);
-        table.getColumnModel().getColumn(5).setPreferredWidth(100);
-        table.getColumnModel().getColumn(6).setPreferredWidth(200); // More space for buttons
+    private void setupResponsiveness() {
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int width = getWidth();
+                if (width < 900) {
+                    pnlFiltersRow.remove(pnlSearch);
+                    pnlFiltersRow.remove(pnlSort);
+                    pnlFiltersRow.setLayout(new GridLayout(2, 1, 0, 10));
+                    pnlFiltersRow.add(pnlSearch);
+                    pnlFiltersRow.add(pnlSort);
+                    ((FlowLayout)pnlSort.getLayout()).setAlignment(FlowLayout.LEFT);
+                } else {
+                    pnlFiltersRow.remove(pnlSearch);
+                    pnlFiltersRow.remove(pnlSort);
+                    pnlFiltersRow.setLayout(new BorderLayout());
+                    pnlFiltersRow.add(pnlSearch, BorderLayout.WEST);
+                    pnlFiltersRow.add(pnlSort, BorderLayout.EAST);
+                    ((FlowLayout)pnlSort.getLayout()).setAlignment(FlowLayout.RIGHT);
+                }
+                pnlFiltersRow.revalidate();
+                pnlFiltersRow.repaint();
+            }
+        });
+    }
+
+    private void styleDropdown(JComboBox<String> combo) {
+        combo.setPreferredSize(new Dimension(150, 40));
+        combo.setBackground(Color.WHITE);
+        combo.setBorder(new LineBorder(new Color(230, 230, 235)));
     }
 
     private void addSampleData() {
         tableModel.addRow(new Object[]{"3539", "", "Kellogg's Chocos 250g - (siriyal)", "100", "g", "In Stock", ""});
         tableModel.addRow(new Object[]{"6711", "", "Kellogg's Chocos 127g - (siriyal)", "103", "g", "In Stock", ""});
         tableModel.addRow(new Object[]{"4128", "", "Eggs Bulk Large - (Biththra)", "100", "Pieces", "In Stock", ""});
+        tableModel.addRow(new Object[]{"0021", "", "Cic Besto Eggs Omega 3 Standard 10S - (Biththra)", "47", "Pieces", "In Stock", ""});
+        tableModel.addRow(new Object[]{"ITEM001", "", "Ambewela Non Fat Milk - 1l - (Sample Item Alt Name)", "100", "Pieces", "In Stock", ""});
+        tableModel.addRow(new Object[]{"7688", "", "Anchor Hot Choc 400g - (kiri)", "90", "g", "In Stock", ""});
+        tableModel.addRow(new Object[]{"8888", "", "Ambewela Flavoured Milk Uht Vanilla Tetra 1L - (kiri)", "99", "L", "In Stock", ""});
+        tableModel.addRow(new Object[]{"0511", "", "Ambewela Flavoured Milk Uht Chocolate Tetra 1L - (kiri)", "97", "L", "In Stock", ""});
+        tableModel.addRow(new Object[]{"2693", "", "Tomato - (Thakkali)", "49", "Kg", "In Stock", ""});
     }
 
-    private void setupTable() {
-        // Implementation for custom renderers and listeners
+    private void setupTableRenderers() {
+        table.getColumnModel().getColumn(5).setCellRenderer(new StatusRenderer());
+        table.getColumnModel().getColumn(6).setCellRenderer(new ManageRenderer());
+        
+        table.getColumnModel().getColumn(0).setPreferredWidth(80);
+        table.getColumnModel().getColumn(4).setPreferredWidth(80);
+        table.getColumnModel().getColumn(5).setPreferredWidth(100);
+        table.getColumnModel().getColumn(6).setPreferredWidth(200);
     }
+
 
     private JButton createHeaderButton(String text, boolean isCircle) {
         JButton btn = new JButton(text) {
@@ -231,14 +266,14 @@ public class ItemsListPanel extends JPanel {
         return btn;
     }
 
-    private JButton createActionButton(String text, Color bg) {
+    private JButton createMiniButton(String text, Color bg) {
         JButton btn = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
                 super.paintComponent(g2);
                 g2.dispose();
             }
@@ -249,9 +284,10 @@ public class ItemsListPanel extends JPanel {
         btn.setFocusPainted(false);
         btn.setBorder(null);
         btn.setContentAreaFilled(false);
-        btn.setPreferredSize(new Dimension(80, 35));
+        btn.setPreferredSize(new Dimension(text.length() > 10 ? 150 : 100, 40));
         return btn;
     }
+
 
     // --- Custom Renderers ---
     

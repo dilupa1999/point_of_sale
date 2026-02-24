@@ -7,23 +7,25 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
-public class StockReportPanel extends JPanel {
+public class ExpensesReportPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color headerBlue = new Color(30, 136, 229);
-    private final Color actionGreen = new Color(139, 195, 74);
-    private final Color resetBlack = new Color(33, 33, 33);
     private final Color fieldBg = new Color(245, 245, 250);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
 
     private JTable table;
     private DefaultTableModel tableModel;
+    private JPanel pnlFilters;
+    private JPanel pnlFiltersWrapper;
 
-    public StockReportPanel(MainFrame mainFrame) {
+    public ExpensesReportPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         initComponents(mainFrame);
+        setupResponsiveness();
     }
 
     private void initComponents(MainFrame mainFrame) {
@@ -65,7 +67,6 @@ public class StockReportPanel extends JPanel {
         lblWelcome.setForeground(Color.WHITE);
         
         JButton btnPower = createHeaderButton("\u23FB", true);
-        btnPower.setFont(new Font("Segoe UI", Font.BOLD, 20));
 
         pnlTopRight.add(lblWelcome);
         pnlTopRight.add(btnPower);
@@ -79,76 +80,38 @@ public class StockReportPanel extends JPanel {
         pnlMain.setBorder(new EmptyBorder(10, 25, 10, 25));
 
         // Breadcrumbs and Top Actions
-        JPanel pnlBreadcrumbRow = new JPanel(new BorderLayout());
-        pnlBreadcrumbRow.setOpaque(false);
+        JPanel pnlTopActions = new JPanel(new BorderLayout());
+        pnlTopActions.setOpaque(false);
         
-        JLabel lblBreadcrumb = new JLabel("Main Panel > Stock Report");
+        JLabel lblBreadcrumb = new JLabel("Main Panel > Reports > Expenses Report");
         lblBreadcrumb.setForeground(new Color(100, 100, 100));
         lblBreadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        pnlBreadcrumbRow.add(lblBreadcrumb, BorderLayout.WEST);
+        pnlTopActions.add(lblBreadcrumb, BorderLayout.WEST);
 
-        JButton btnGenerate = createMiniButton("Generate Report", resetBlack);
-        pnlBreadcrumbRow.add(btnGenerate, BorderLayout.EAST);
+        JButton btnGenerate = createMiniButton("Generate Report", new Color(33, 33, 33));
+        pnlTopActions.add(btnGenerate, BorderLayout.EAST);
 
-        pnlMain.add(pnlBreadcrumbRow, BorderLayout.NORTH);
+        pnlMain.add(pnlTopActions, BorderLayout.NORTH);
 
-        // Filters Container
+        // Filters Section
         JPanel pnlCenter = new JPanel(new BorderLayout());
         pnlCenter.setBackground(Color.WHITE);
 
-        JPanel pnlFilters = new JPanel(new GridBagLayout());
+        pnlFiltersWrapper = new JPanel(new BorderLayout());
+        pnlFiltersWrapper.setBackground(Color.WHITE);
+
+        pnlFilters = new JPanel(new GridBagLayout());
         pnlFilters.setBackground(Color.WHITE);
         pnlFilters.setBorder(new EmptyBorder(20, 0, 20, 0));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
 
-        // Row 1 Labels
-        gbc.gridy = 0;
-        pnlFilters.add(createFilterLabel("Item Name"), setGbc(gbc, 0));
-        pnlFilters.add(createFilterLabel("Sale Code"), setGbc(gbc, 1));
-        pnlFilters.add(createFilterLabel("From Date"), setGbc(gbc, 2));
-        pnlFilters.add(createFilterLabel("To Date"), setGbc(gbc, 3));
-        
-        // Row 1 Fields
-        gbc.gridy = 1;
-        JTextField txtItemName = new JTextField("Enter item name");
-        styleField(txtItemName);
-        pnlFilters.add(txtItemName, setGbc(gbc, 0));
-        
-        JTextField txtSaleCode = new JTextField("Enter sale code");
-        styleField(txtSaleCode);
-        pnlFilters.add(txtSaleCode, setGbc(gbc, 1));
-        
-        JTextField txtFrom = new JTextField("mm/dd/yyyy");
-        styleField(txtFrom);
-        pnlFilters.add(txtFrom, setGbc(gbc, 2));
-        
-        JTextField txtTo = new JTextField("mm/dd/yyyy");
-        styleField(txtTo);
-        pnlFilters.add(txtTo, setGbc(gbc, 3));
-
-        // Buttons
-        gbc.weightx = 0;
-        gbc.gridx = 4;
-        JButton btnSubmit = createMiniButton("Submit", actionGreen);
-        btnSubmit.setPreferredSize(new Dimension(100, 45));
-        pnlFilters.add(btnSubmit, gbc);
-
-        gbc.gridx = 5;
-        JButton btnReset = createMiniButton("Reset", resetBlack);
-        btnReset.setPreferredSize(new Dimension(100, 45));
-        pnlFilters.add(btnReset, gbc);
-
-        pnlCenter.add(pnlFilters, BorderLayout.NORTH);
+        pnlFiltersWrapper.add(pnlFilters, BorderLayout.CENTER);
+        pnlCenter.add(pnlFiltersWrapper, BorderLayout.NORTH);
 
         // Table Section
         JPanel pnlTableSection = new JPanel(new BorderLayout());
         pnlTableSection.setBackground(Color.WHITE);
         
-        String[] columns = {"NO", "ITEM NAME", "SALE CODE", "QUANTITY", "DATE"};
-        
+        String[] columns = {"ID", "EXPENSE TITLE", "EXPENSE CATEGORY", "AMOUNT (RS)", "CREATED AT", "DESCRIPTION"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -169,9 +132,9 @@ public class StockReportPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(tableHeaderGreen); // Green header as per web screenshot
+                lbl.setBackground(headerBlue);
                 lbl.setForeground(Color.WHITE);
-                lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
+                lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);
                 lbl.setOpaque(true);
                 lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.WHITE));
@@ -197,64 +160,86 @@ public class StockReportPanel extends JPanel {
         scrollPane.getViewport().setBackground(Color.WHITE);
         
         pnlTableSection.add(scrollPane, BorderLayout.CENTER);
-
-        // Pagination UI
-        JPanel pnlPagination = new JPanel(new BorderLayout());
-        pnlPagination.setBackground(Color.WHITE);
-        pnlPagination.setBorder(new EmptyBorder(15, 0, 0, 0));
-        
-        JLabel lblShowing = new JLabel("Showing 1 to 15 of 17 results");
-        lblShowing.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        pnlPagination.add(lblShowing, BorderLayout.WEST);
-        
-        JPanel pnlPageButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-        pnlPageButtons.setOpaque(false);
-        pnlPageButtons.add(createPageButton("<", false));
-        pnlPageButtons.add(createPageButton("1", true));
-        pnlPageButtons.add(createPageButton("2", false));
-        pnlPageButtons.add(createPageButton(">", false));
-        pnlPagination.add(pnlPageButtons, BorderLayout.EAST);
-        
-        pnlTableSection.add(pnlPagination, BorderLayout.SOUTH);
-
         pnlCenter.add(pnlTableSection, BorderLayout.CENTER);
+        
         pnlMain.add(pnlCenter, BorderLayout.CENTER);
         add(pnlMain, BorderLayout.CENTER);
     }
 
     private void addSampleData() {
-        tableModel.addRow(new Object[]{"1", "Sample Product 1", "SALE-699B1552EA4EF", "2", "2026-02-22 20:10"});
-        tableModel.addRow(new Object[]{"2", "Ambewela Flavoured Milk Uht Vanilla Tetra 1L", "SALE-699C2845CF95F", "1", "2026-02-23 15:43"});
-        tableModel.addRow(new Object[]{"3", "Ambewela Flavoured Milk Uht Chocolate Tetra 1L", "SALE-699C2845CF95F", "1", "2026-02-23 15:43"});
-        tableModel.addRow(new Object[]{"4", "Anchor Cheese Slices 12S 200g", "SALE-699C2845CF95F", "1", "2026-02-23 15:43"});
-        tableModel.addRow(new Object[]{"5", "Anchor Hot Choc 400g", "SALE-699C288339E0D", "1", "2026-02-23 15:44"});
-        tableModel.addRow(new Object[]{"6", "Anchor Hot Choc 400g", "SALE-699C2B0AC82D5", "1", "2026-02-23 15:55"});
-        tableModel.addRow(new Object[]{"7", "Ambewela Flavoured Milk Uht Chocolate Tetra 1L", "SALE-699C2B0AC82D5", "2", "2026-02-23 15:55"});
-        tableModel.addRow(new Object[]{"8", "Tomato", "SALE-699C2D97166D6", "1", "2026-02-23 16:06"});
-        tableModel.addRow(new Object[]{"9", "Anchor Cheese Slices 12S 200g", "SALE-699C2D97166D6", "1", "2026-02-23 16:06"});
-        tableModel.addRow(new Object[]{"10", "Cic Besto Eggs Omega 3 Standard 10S", "SALE-699C349D7B476", "3", "2026-02-23 16:36"});
+        tableModel.addRow(new Object[]{"1", "Digital Marketing", "Marketing and Advertising", "20000.00", "2026-02-23", "Social media ads"});
+        tableModel.addRow(new Object[]{"2", "Store Rent", "Utility", "50000.00", "2026-02-24", "Monthly rent"});
     }
 
-    private GridBagConstraints setGbc(GridBagConstraints gbc, int x) {
-        gbc.gridx = x;
-        return gbc;
+    private void setupResponsiveness() {
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                int width = getWidth();
+                pnlFilters.removeAll();
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.insets = new Insets(10, 10, 10, 10);
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.weightx = 1.0;
+
+                int cols = width > 1000 ? 4 : (width > 600 ? 2 : 1);
+                
+            JComboBox<String> comboCat = new JComboBox<>(new String[]{"All Categories", "Marketing", "Utility", "Salary", "Rent", "Insurance", "Repair", "Taxes", "Maintenance"});
+            SearchableComboBox.install(comboCat);
+            JPanel f1 = createFilterPanel("Expense Category", comboCat, 0);
+                JPanel f2 = createFilterPanel("Expense Title", new JTextField("Enter expense title"), 0);
+                JPanel f3 = createFilterPanel("From Date", new JTextField("mm/dd/yyyy"), 0);
+                JPanel f4 = createFilterPanel("To Date", new JTextField("mm/dd/yyyy"), 0);
+
+                JPanel[] panels = {f1, f2, f3, f4};
+                for (int i = 0; i < panels.length; i++) {
+                    gbc.gridx = i % cols;
+                    gbc.gridy = i / cols;
+                    pnlFilters.add(panels[i], gbc);
+                }
+
+                // Filter Button
+                gbc.gridy = (panels.length + cols - 1) / cols + 1;
+                gbc.gridx = 0;
+                gbc.gridwidth = cols;
+                JButton btnFilter = createMiniButton("Filter", primaryBlue);
+                btnFilter.setPreferredSize(new Dimension(0, 45));
+                pnlFilters.add(btnFilter, gbc);
+
+                pnlFilters.revalidate();
+                pnlFilters.repaint();
+            }
+        });
     }
 
-    private JLabel createFilterLabel(String text) {
-        JLabel lbl = new JLabel(text);
+    private JPanel createFilterPanel(String label, JComponent field, int width) {
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.setOpaque(false);
+        
+        JLabel lbl = new JLabel(label);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lbl.setForeground(new Color(50, 50, 50));
-        return lbl;
-    }
-
-    private void styleField(JComponent field) {
-        field.setPreferredSize(new Dimension(0, 45));
+        
+        if(width > 0) {
+            field.setPreferredSize(new Dimension(width, 40));
+            field.setMaximumSize(new Dimension(width, 40));
+        } else {
+            field.setPreferredSize(new Dimension(0, 40));
+            field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        }
         field.setBackground(fieldBg);
         field.setBorder(new LineBorder(new Color(230, 230, 235)));
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        
         if (field instanceof JTextField) {
-            ((JTextField) field).setForeground(Color.GRAY);
+            ((JTextField)field).setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            ((JTextField)field).setForeground(Color.GRAY);
         }
+
+        p.add(lbl);
+        p.add(Box.createVerticalStrut(5));
+        p.add(field);
+        return p;
     }
 
     private JButton createMiniButton(String text, Color bg) {
@@ -275,18 +260,7 @@ public class StockReportPanel extends JPanel {
         btn.setFocusPainted(false);
         btn.setBorder(null);
         btn.setContentAreaFilled(false);
-        btn.setPreferredSize(new Dimension(text.length() > 10 ? 150 : 100, 40));
-        return btn;
-    }
-
-    private JButton createPageButton(String text, boolean isActive) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btn.setPreferredSize(new Dimension(35, 35));
-        btn.setBackground(isActive ? primaryBlue : Color.WHITE);
-        btn.setForeground(isActive ? Color.WHITE : Color.DARK_GRAY);
-        btn.setBorder(new LineBorder(new Color(230, 230, 235)));
-        btn.setFocusPainted(false);
+        btn.setPreferredSize(new Dimension(150, 40));
         return btn;
     }
 
@@ -316,4 +290,3 @@ public class StockReportPanel extends JPanel {
         return btn;
     }
 }
-

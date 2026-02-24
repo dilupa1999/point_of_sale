@@ -8,19 +8,18 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 
-public class StockReportPanel extends JPanel {
+public class ItemStockCountPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color headerBlue = new Color(30, 136, 229);
     private final Color actionGreen = new Color(139, 195, 74);
     private final Color resetBlack = new Color(33, 33, 33);
     private final Color fieldBg = new Color(245, 245, 250);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
 
     private JTable table;
     private DefaultTableModel tableModel;
 
-    public StockReportPanel(MainFrame mainFrame) {
+    public ItemStockCountPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         initComponents(mainFrame);
@@ -82,7 +81,7 @@ public class StockReportPanel extends JPanel {
         JPanel pnlBreadcrumbRow = new JPanel(new BorderLayout());
         pnlBreadcrumbRow.setOpaque(false);
         
-        JLabel lblBreadcrumb = new JLabel("Main Panel > Stock Report");
+        JLabel lblBreadcrumb = new JLabel("Main Panel > Item Stock Count");
         lblBreadcrumb.setForeground(new Color(100, 100, 100));
         lblBreadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         pnlBreadcrumbRow.add(lblBreadcrumb, BorderLayout.WEST);
@@ -106,20 +105,21 @@ public class StockReportPanel extends JPanel {
 
         // Row 1 Labels
         gbc.gridy = 0;
-        pnlFilters.add(createFilterLabel("Item Name"), setGbc(gbc, 0));
-        pnlFilters.add(createFilterLabel("Sale Code"), setGbc(gbc, 1));
+        pnlFilters.add(createFilterLabel("Category"), setGbc(gbc, 0));
+        pnlFilters.add(createFilterLabel("Item Name"), setGbc(gbc, 1));
         pnlFilters.add(createFilterLabel("From Date"), setGbc(gbc, 2));
         pnlFilters.add(createFilterLabel("To Date"), setGbc(gbc, 3));
         
         // Row 1 Fields
         gbc.gridy = 1;
+        JComboBox<String> comboCat = new JComboBox<>(new String[]{"All Categories", "Dairy Products", "Vegetables", "Bakery", "Drinks", "Fruits", "Snacks", "Beverages", "Spices", "Grains", "Frozen Foods", "Meat", "Pharmacy"});
+        styleField(comboCat);
+        SearchableComboBox.install(comboCat);
+        pnlFilters.add(comboCat, setGbc(gbc, 0));
+        
         JTextField txtItemName = new JTextField("Enter item name");
         styleField(txtItemName);
-        pnlFilters.add(txtItemName, setGbc(gbc, 0));
-        
-        JTextField txtSaleCode = new JTextField("Enter sale code");
-        styleField(txtSaleCode);
-        pnlFilters.add(txtSaleCode, setGbc(gbc, 1));
+        pnlFilters.add(txtItemName, setGbc(gbc, 1));
         
         JTextField txtFrom = new JTextField("mm/dd/yyyy");
         styleField(txtFrom);
@@ -147,7 +147,12 @@ public class StockReportPanel extends JPanel {
         JPanel pnlTableSection = new JPanel(new BorderLayout());
         pnlTableSection.setBackground(Color.WHITE);
         
-        String[] columns = {"NO", "ITEM NAME", "SALE CODE", "QUANTITY", "DATE"};
+        String[] columns = {
+            "NO", "ITEM NAME", "CATEGORY", "STARTING STOCK", "PURCHASED STOCK", 
+            "SOLD STOCK", "ENDING STOCK", "PURCHASE PRICE", "RETAIL PRICE", 
+            "WHOLE SALE PRICE", "STOCK VALUE (RS.)", "PRICE PER ITEM (RS.)", 
+            "SOLD STOCK VALUE (RS.)", "DATE"
+        };
         
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -169,9 +174,9 @@ public class StockReportPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(tableHeaderGreen); // Green header as per web screenshot
+                lbl.setBackground(actionGreen); // Green header as per screenshot
                 lbl.setForeground(Color.WHITE);
-                lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
+                lbl.setFont(new Font("Segoe UI", Font.BOLD, 10));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);
                 lbl.setOpaque(true);
                 lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.WHITE));
@@ -197,42 +202,19 @@ public class StockReportPanel extends JPanel {
         scrollPane.getViewport().setBackground(Color.WHITE);
         
         pnlTableSection.add(scrollPane, BorderLayout.CENTER);
-
-        // Pagination UI
-        JPanel pnlPagination = new JPanel(new BorderLayout());
-        pnlPagination.setBackground(Color.WHITE);
-        pnlPagination.setBorder(new EmptyBorder(15, 0, 0, 0));
-        
-        JLabel lblShowing = new JLabel("Showing 1 to 15 of 17 results");
-        lblShowing.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        pnlPagination.add(lblShowing, BorderLayout.WEST);
-        
-        JPanel pnlPageButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-        pnlPageButtons.setOpaque(false);
-        pnlPageButtons.add(createPageButton("<", false));
-        pnlPageButtons.add(createPageButton("1", true));
-        pnlPageButtons.add(createPageButton("2", false));
-        pnlPageButtons.add(createPageButton(">", false));
-        pnlPagination.add(pnlPageButtons, BorderLayout.EAST);
-        
-        pnlTableSection.add(pnlPagination, BorderLayout.SOUTH);
-
         pnlCenter.add(pnlTableSection, BorderLayout.CENTER);
+
         pnlMain.add(pnlCenter, BorderLayout.CENTER);
         add(pnlMain, BorderLayout.CENTER);
     }
 
     private void addSampleData() {
-        tableModel.addRow(new Object[]{"1", "Sample Product 1", "SALE-699B1552EA4EF", "2", "2026-02-22 20:10"});
-        tableModel.addRow(new Object[]{"2", "Ambewela Flavoured Milk Uht Vanilla Tetra 1L", "SALE-699C2845CF95F", "1", "2026-02-23 15:43"});
-        tableModel.addRow(new Object[]{"3", "Ambewela Flavoured Milk Uht Chocolate Tetra 1L", "SALE-699C2845CF95F", "1", "2026-02-23 15:43"});
-        tableModel.addRow(new Object[]{"4", "Anchor Cheese Slices 12S 200g", "SALE-699C2845CF95F", "1", "2026-02-23 15:43"});
-        tableModel.addRow(new Object[]{"5", "Anchor Hot Choc 400g", "SALE-699C288339E0D", "1", "2026-02-23 15:44"});
-        tableModel.addRow(new Object[]{"6", "Anchor Hot Choc 400g", "SALE-699C2B0AC82D5", "1", "2026-02-23 15:55"});
-        tableModel.addRow(new Object[]{"7", "Ambewela Flavoured Milk Uht Chocolate Tetra 1L", "SALE-699C2B0AC82D5", "2", "2026-02-23 15:55"});
-        tableModel.addRow(new Object[]{"8", "Tomato", "SALE-699C2D97166D6", "1", "2026-02-23 16:06"});
-        tableModel.addRow(new Object[]{"9", "Anchor Cheese Slices 12S 200g", "SALE-699C2D97166D6", "1", "2026-02-23 16:06"});
-        tableModel.addRow(new Object[]{"10", "Cic Besto Eggs Omega 3 Standard 10S", "SALE-699C349D7B476", "3", "2026-02-23 16:36"});
+        tableModel.addRow(new Object[]{"1", "Sample Product 1", "Dairy Products", "20", "20", "2", "18", "250.00", "295.00", "290.00", "4,500.00", "250.00", "590.00", "2026-02-22"});
+        tableModel.addRow(new Object[]{"2", "Anchor Cheese Slices 12S 200g", "Dairy Products", "100", "100", "4", "96", "1000.00", "1730.00", "1100.00", "96,000.00", "1,000.00", "6,920.00", "2026-02-23"});
+        tableModel.addRow(new Object[]{"3", "Tomato", "Vegetables", "50", "50", "1", "49", "110.00", "105.00", "10000.00", "5,390.00", "110.00", "105.00", "2026-02-23"});
+        tableModel.addRow(new Object[]{"4", "Ambewela Flavoured Milk Uht Chocolate Tetra 1L", "Dairy Products", "100", "100", "4", "97", "350.00", "540.00", "490.00", "33,950.00", "350.00", "2,160.00", "2026-02-23"});
+        tableModel.addRow(new Object[]{"5", "Ambewela Flavoured Milk Uht Vanilla Tetra 1L", "Dairy Products", "100", "100", "1", "99", "450.00", "540.00", "500.00", "44,550.00", "450.00", "540.00", "2026-02-23"});
+        tableModel.addRow(new Object[]{"6", "Anchor Hot Choc 400g", "Dairy Products", "100", "100", "10", "90", "980.00", "1240.00", "1000.00", "88,200.00", "980.00", "12,400.00", "2026-02-23"});
     }
 
     private GridBagConstraints setGbc(GridBagConstraints gbc, int x) {
@@ -279,17 +261,6 @@ public class StockReportPanel extends JPanel {
         return btn;
     }
 
-    private JButton createPageButton(String text, boolean isActive) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btn.setPreferredSize(new Dimension(35, 35));
-        btn.setBackground(isActive ? primaryBlue : Color.WHITE);
-        btn.setForeground(isActive ? Color.WHITE : Color.DARK_GRAY);
-        btn.setBorder(new LineBorder(new Color(230, 230, 235)));
-        btn.setFocusPainted(false);
-        return btn;
-    }
-
     private JButton createHeaderButton(String text, boolean isCircle) {
         JButton btn = new JButton(text) {
             @Override
@@ -316,4 +287,3 @@ public class StockReportPanel extends JPanel {
         return btn;
     }
 }
-

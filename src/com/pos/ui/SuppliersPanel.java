@@ -14,14 +14,14 @@ public class SuppliersPanel extends JPanel {
 
     private JPanel pnlGrid;
 
-    public SuppliersPanel() {
+    public SuppliersPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
-        initComponents();
+        initComponents(mainFrame);
         setupResponsiveness();
     }
 
-    private void initComponents() {
+    private void initComponents(MainFrame mainFrame) {
         // --- Header / Breadcrumbs ---
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(Color.WHITE);
@@ -43,10 +43,16 @@ public class SuppliersPanel extends JPanel {
         pnlGrid.setOpaque(false);
 
         // Adding the Menu Cards
-        pnlGrid.add(createMenuCard("Add New Supplier", "AddTruck"));
-        pnlGrid.add(createMenuCard("Suppliers List", "TruckList"));
-        pnlGrid.add(createMenuCard("Supplier Groups", "Group"));
-        pnlGrid.add(createMenuCard("Import Suppliers", "Import"));
+        JButton btnAddSupplier = createMenuCard("Add New Supplier", "AddTruck");
+        btnAddSupplier.addActionListener(e -> mainFrame.showPanel("AddSupplier"));
+        pnlGrid.add(btnAddSupplier);
+
+        JButton btnSuppliersList = createMenuCard("Suppliers List", "TruckList");
+        btnSuppliersList.addActionListener(e -> mainFrame.showPanel("SuppliersList"));
+        pnlGrid.add(btnSuppliersList);
+        JButton btnImportSuppliers = createMenuCard("Import Suppliers", "Import");
+        btnImportSuppliers.addActionListener(e -> mainFrame.showPanel("ImportSuppliers"));
+        pnlGrid.add(btnImportSuppliers);
 
         pnlContent.add(pnlGrid);
 
@@ -131,10 +137,6 @@ public class SuppliersPanel extends JPanel {
                     g2.drawOval(cx-8, cy+4, 4, 4);
                     g2.drawOval(cx+6, cy+4, 4, 4);
                     g2.drawLine(cx-12, cy-10, cx+12, cy-10);
-                    break;
-                case "Group":
-                    g2.drawOval(cx-10, cy-10, 20, 20);
-                    g2.drawOval(cx-5, cy-5, 10, 10);
                     break;
                 case "Import":
                     g2.drawRect(cx-10, cy-6, 20, 16);

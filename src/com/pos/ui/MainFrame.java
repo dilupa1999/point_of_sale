@@ -13,6 +13,7 @@ public class MainFrame extends JFrame {
     private JPanel pnlSidebar; 
     private final Color sidebarBg = new Color(245, 245, 250); // Light sidebar
     private final Color activeBlue = new Color(13, 71, 161); // Deep Blue active highlight
+    private final Color hoverBg = new Color(235, 237, 245);
     private final Color footerGreen = new Color(0, 100, 30); // Professional dark green
     private final Font fontSidebar = new Font("Segoe UI", Font.BOLD, 12);
 
@@ -30,7 +31,7 @@ public class MainFrame extends JFrame {
         // --- Sidebar (Scrollable) ---
         JPanel pnlSidebarContainer = new JPanel(new BorderLayout());
         pnlSidebarContainer.setBackground(sidebarBg);
-        pnlSidebarContainer.setPreferredSize(new Dimension(100, 0));
+        pnlSidebarContainer.setPreferredSize(new Dimension(115, 0));
         pnlSidebarContainer.setBorder(new LineBorder(new Color(230, 230, 235), 1));
 
         pnlSidebar = new JPanel();
@@ -77,16 +78,16 @@ public class MainFrame extends JFrame {
         mainContent.add(new POSPanel(), "POS");
         mainContent.add(new ItemsPanel(this), "Items");
         mainContent.add(new ExportItemsPanel(), "Export");
-        mainContent.add(new StockPanel(), "Stock");
-        mainContent.add(new SalesPanel(), "Sales");
+        mainContent.add(new StockPanel(this), "Stock");
+        mainContent.add(new SalesPanel(this), "Sales");
         mainContent.add(new DueAmountPanel(), "Due");
         mainContent.add(new UsersPanel(this), "Users");
-        mainContent.add(new CustomerPanel(), "Customer");
-        mainContent.add(new SuppliersPanel(), "Suppliers");
-        mainContent.add(new ExpensesPanel(), "Expenses");
-        mainContent.add(new ReportsPanel(), "Reports");
+        mainContent.add(new CustomerPanel(this), "Customer");
+        mainContent.add(new SuppliersPanel(this), "Suppliers");
+        mainContent.add(new ExpensesPanel(this), "Expenses");
+        mainContent.add(new ReportsPanel(this), "Reports");
         mainContent.add(new SettingsPanel(), "Settings");
-        mainContent.add(new StockReportPanel(), "StockReport"); 
+        mainContent.add(new StockReportPanel(this), "StockReport"); 
         mainContent.add(new AddItemsPanel(this), "AddItems");
         mainContent.add(new AddCategoryPanel(this), "AddCategory");
         mainContent.add(new ItemsListPanel(this), "ItemsList");
@@ -98,7 +99,27 @@ public class MainFrame extends JFrame {
         mainContent.add(new AddPermissionPanel(this), "AddPermission");
         mainContent.add(new UsersListPanel(this), "UsersList");
         mainContent.add(new RolesListPanel(this), "RolesList");
+        mainContent.add(new SalesListPanel(this), "SalesList");
+        mainContent.add(new ReturnsListPanel(this), "ReturnsList");
+        mainContent.add(new AddCustomerPanel(this), "AddCustomer");
+        mainContent.add(new CustomerListPanel(this), "CustomerList");
+        mainContent.add(new ImportCustomerPanel(this), "ImportCustomer");
+        mainContent.add(new AddSupplierPanel(this), "AddSupplier");
+        mainContent.add(new SuppliersListPanel(this), "SuppliersList");
+        mainContent.add(new ImportSuppliersPanel(this), "ImportSuppliers");
+        mainContent.add(new AddExpensePanel(this), "AddExpense");
+        mainContent.add(new AddExpenseCategoryPanel(this), "ExpenseCategories");
+        mainContent.add(new ExpensesListPanel(this), "ExpensesList");
+        mainContent.add(new ItemStockCountPanel(this), "ItemStockCount");
+        mainContent.add(new ExpenseCategoryListPanel(this), "ExpenseCategoryList");
         mainContent.add(new PermissionListPanel(this), "PermissionList");
+        mainContent.add(new LoyaltyPointReportPanel(this), "LoyaltyPointReport");
+        mainContent.add(new DailySummaryReportPanel(this), "DailySummaryReport");
+        mainContent.add(new MonthlySummaryReportPanel(this), "MonthlySummaryReport");
+        mainContent.add(new YearlySummaryReportPanel(this), "YearlySummaryReport");
+        mainContent.add(new ItemReportPanel(this), "ItemReport");
+        mainContent.add(new SalesReportPanel(this), "SalesReport");
+        mainContent.add(new ExpensesReportPanel(this), "ExpensesReport");
         
         add(mainContent, BorderLayout.CENTER);
 
@@ -122,18 +143,19 @@ public class MainFrame extends JFrame {
         btn.setText("<html><center>" + text + "</center></html>");
         btn.setVerticalTextPosition(SwingConstants.BOTTOM);
         btn.setHorizontalTextPosition(SwingConstants.CENTER);
-        btn.setPreferredSize(new Dimension(100, 80));
-        btn.setMaximumSize(new Dimension(100, 80));
+        btn.setMaximumSize(new Dimension(115, 85));
+        btn.setPreferredSize(new Dimension(115, 85));
         btn.setFocusPainted(false);
         btn.setOpaque(true);
         btn.setBackground(bg);
         btn.setForeground(fg);
-        btn.setBorder(new LineBorder(new Color(235, 235, 240), 1));
+        btn.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(230, 230, 235)));
         btn.setFont(fontSidebar);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                if (btn != activeButton) btn.setBackground(new Color(230, 230, 240));
+                if (btn != activeButton) btn.setBackground(hoverBg);
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 if (btn != activeButton) btn.setBackground(sidebarBg);
@@ -152,12 +174,17 @@ public class MainFrame extends JFrame {
         if (activeButton != null) {
             activeButton.setBackground(sidebarBg);
             activeButton.setForeground(Color.GRAY);
+            activeButton.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(230, 230, 235)));
             ((SidebarIcon)activeButton.getIcon()).setColor(Color.GRAY);
         }
         activeButton = btn;
-        btn.setBackground(activeBlue);
-        activeButton.setForeground(Color.WHITE);
-        ((SidebarIcon)activeButton.getIcon()).setColor(Color.WHITE);
+        btn.setBackground(Color.WHITE);
+        btn.setForeground(activeBlue);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 5, 1, 0, activeBlue),
+            BorderFactory.createEmptyBorder(0, -5, 0, 0)
+        ));
+        ((SidebarIcon)activeButton.getIcon()).setColor(activeBlue);
         activeButton.repaint();
     }
 
@@ -188,7 +215,7 @@ public class MainFrame extends JFrame {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(color);
-            g2.setStroke(new BasicStroke(1.5f));
+            g2.setStroke(new BasicStroke(2.0f));
             g2.translate(x, y);
 
             int cx = w / 2;

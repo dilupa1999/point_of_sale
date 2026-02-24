@@ -17,14 +17,14 @@ public class ReportsPanel extends JPanel {
 
     private JPanel pnlGrid;
 
-    public ReportsPanel() {
+    public ReportsPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
-        initComponents();
+        initComponents(mainFrame);
         setupResponsiveness();
     }
 
-    private void initComponents() {
+    private void initComponents(MainFrame mainFrame) {
         // --- Header / Breadcrumbs ---
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(Color.WHITE);
@@ -32,6 +32,7 @@ public class ReportsPanel extends JPanel {
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Reports");
         lblBreadcrumb.setForeground(breadcrumbGray);
+        lblBreadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
         add(pnlHeader, BorderLayout.NORTH);
@@ -41,24 +42,21 @@ public class ReportsPanel extends JPanel {
         pnlContent.setBackground(Color.WHITE);
         pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
 
-        pnlGrid = new JPanel(new GridLayout(0, 4, 20, 20)); // Base 4 columns
+        pnlGrid = new JPanel(new GridLayout(0, 5, 20, 20)); // Match screenshot 5 columns
         pnlGrid.setOpaque(false);
 
-        // Row 1
-        pnlGrid.add(createMenuCard("Sales Report", "SalesReport", primaryBlue));
-        pnlGrid.add(createMenuCard("Item Stock Count", "StockCount", primaryBlue));
-        pnlGrid.add(createMenuCard("Item Report", "ItemReport", primaryBlue));
-        pnlGrid.add(createMenuCard("Expences Report", "ExpensesReport", primaryBlue));
-        pnlGrid.add(createMenuCard("Stock Report", "StockReport", primaryBlue));
-        pnlGrid.add(createMenuCard("Loyalty Point Income Report", "LoyaltyReport", primaryBlue));
+        // Row 1 (5 cards as per screenshot)
+        pnlGrid.add(createMenuCard("Sales Report", "SalesReport", primaryBlue, e -> mainFrame.showPanel("SalesReport")));
+        pnlGrid.add(createMenuCard("Item Stock Count", "StockCount", primaryBlue, e -> mainFrame.showPanel("ItemStockCount")));
+        pnlGrid.add(createMenuCard("Item Report", "ItemReport", primaryBlue, e -> mainFrame.showPanel("ItemReport")));
+        pnlGrid.add(createMenuCard("Expences Report", "ExpensesReport", primaryBlue, e -> mainFrame.showPanel("ExpensesReport")));
+        pnlGrid.add(createMenuCard("Stock Report", "StockReport", primaryBlue, e -> mainFrame.showPanel("StockReport")));
 
-        // Row 2
-       
-        pnlGrid.add(createMenuCard("Daily Summary Report", "SummaryReport", summaryBlue));
-        pnlGrid.add(createMenuCard("Monthly Summary Report", "SummaryReport", primaryPurple));
-
-        // Row 3
-        pnlGrid.add(createMenuCard("Yearly Summary Report", "SummaryReport", primaryRed));
+        // Row 2 (4 cards as per screenshot)
+        pnlGrid.add(createMenuCard("Loyalty Point Income Report", "LoyaltyReport", primaryBlue, e -> mainFrame.showPanel("LoyaltyPointReport")));
+        pnlGrid.add(createMenuCard("Daily Summary Report", "SummaryReport", summaryBlue, e -> mainFrame.showPanel("DailySummaryReport")));
+        pnlGrid.add(createMenuCard("Monthly Summary Report", "SummaryReport", primaryPurple, e -> mainFrame.showPanel("MonthlySummaryReport")));
+        pnlGrid.add(createMenuCard("Yearly Summary Report", "SummaryReport", primaryRed, e -> mainFrame.showPanel("YearlySummaryReport")));
 
         pnlContent.add(pnlGrid);
 
@@ -77,7 +75,7 @@ public class ReportsPanel extends JPanel {
         });
     }
 
-    private JButton createMenuCard(String title, String iconType, Color bg) {
+    private JButton createMenuCard(String title, String iconType, Color bg, java.awt.event.ActionListener al) {
         JButton btn = new JButton(new ReportMenuIcon(iconType, 48, 48, Color.WHITE));
         btn.setText("<html><center>" + title + "</center></html>");
         btn.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -92,6 +90,8 @@ public class ReportsPanel extends JPanel {
             BorderFactory.createEmptyBorder(20, 10, 20, 10)
         ));
         
+        if (al != null) btn.addActionListener(al);
+
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) { btn.setBackground(bg.darker()); }
             public void mouseExited(java.awt.event.MouseEvent evt) { btn.setBackground(bg); }

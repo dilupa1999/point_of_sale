@@ -10,13 +10,13 @@ public class SalesPanel extends JPanel {
     private final Color breadcrumbGray = new Color(100, 100, 100);
     private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 14);
 
-    public SalesPanel() {
+    public SalesPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
-        initComponents();
+        initComponents(mainFrame);
     }
 
-    private void initComponents() {
+    private void initComponents(MainFrame mainFrame) {
         // --- Header / Breadcrumbs ---
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(Color.WHITE);
@@ -37,8 +37,13 @@ public class SalesPanel extends JPanel {
         pnlCards.setOpaque(false);
 
         // Adding the Menu Cards
-        pnlCards.add(createMenuCard("Sales Items List", "SalesList"));
-        pnlCards.add(createMenuCard("Returns List View", "ReturnsList"));
+        JButton btnSalesList = createMenuCard("Sales Items List", "SalesList");
+        btnSalesList.addActionListener(e -> mainFrame.showPanel("SalesList"));
+        pnlCards.add(btnSalesList);
+
+        JButton btnReturnsList = createMenuCard("Returns List View", "ReturnsList");
+        btnReturnsList.addActionListener(e -> mainFrame.showPanel("ReturnsList"));
+        pnlCards.add(btnReturnsList);
 
         pnlContent.add(pnlCards);
 

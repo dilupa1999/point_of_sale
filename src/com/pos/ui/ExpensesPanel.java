@@ -14,14 +14,14 @@ public class ExpensesPanel extends JPanel {
 
     private JPanel pnlGrid;
 
-    public ExpensesPanel() {
+    public ExpensesPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
-        initComponents();
+        initComponents(mainFrame);
         setupResponsiveness();
     }
 
-    private void initComponents() {
+    private void initComponents(MainFrame mainFrame) {
         // --- Header / Breadcrumbs ---
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(Color.WHITE);
@@ -43,10 +43,21 @@ public class ExpensesPanel extends JPanel {
         pnlGrid.setOpaque(false);
 
         // Adding the Menu Cards
-        pnlGrid.add(createMenuCard("Add New Expense", "AddMoney"));
-        pnlGrid.add(createMenuCard("Expenses List", "MoneyList"));
-        pnlGrid.add(createMenuCard("Expense Categories", "Group"));
-        pnlGrid.add(createMenuCard("Import Expenses", "Import"));
+        JButton btnAddExpense = createMenuCard("Add New Expense", "AddMoney");
+        btnAddExpense.addActionListener(e -> mainFrame.showPanel("AddExpense"));
+        pnlGrid.add(btnAddExpense);
+
+        JButton btnExpensesList = createMenuCard("Expenses List", "MoneyList");
+        btnExpensesList.addActionListener(e -> mainFrame.showPanel("ExpensesList"));
+        pnlGrid.add(btnExpensesList);
+
+        JButton btnExpenseCategories = createMenuCard("Expense Categories", "Group");
+        btnExpenseCategories.addActionListener(e -> mainFrame.showPanel("ExpenseCategories"));
+        pnlGrid.add(btnExpenseCategories);
+
+        JButton btnCategoryList = createMenuCard("Expenses Category List", "MoneyList");
+        btnCategoryList.addActionListener(e -> mainFrame.showPanel("ExpenseCategoryList"));
+        pnlGrid.add(btnCategoryList);
 
         pnlContent.add(pnlGrid);
 

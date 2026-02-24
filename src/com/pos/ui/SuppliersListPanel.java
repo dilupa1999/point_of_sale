@@ -7,29 +7,21 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
-public class StockPanel extends JPanel {
+public class SuppliersListPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color headerBlue = new Color(30, 136, 229);
-    private final Color fieldBg = new Color(245, 245, 250);
-    private final Color breadcrumbGray = new Color(100, 100, 100);
+    private final Color actionGreen = new Color(139, 195, 74);
+    private final Color disableRed = new Color(211, 47, 47);
 
     private JTable table;
     private DefaultTableModel tableModel;
-    private JPanel pnlFilterBar;
-    private JPanel pnlSearch;
-    private JPanel pnlEntries;
-    private JPanel pnlBreadcrumbRow;
-    private JPanel pnlExportActions;
 
-    public StockPanel(MainFrame mainFrame) {
+    public SuppliersListPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         initComponents(mainFrame);
-        setupResponsiveness();
     }
 
     private void initComponents(MainFrame mainFrame) {
@@ -43,7 +35,7 @@ public class StockPanel extends JPanel {
         pnlTopLeft.setOpaque(false);
 
         JButton btnBack = createHeaderButton("<", true);
-        btnBack.addActionListener(e -> mainFrame.showPanel("Dashboard"));
+        btnBack.addActionListener(e -> mainFrame.showPanel("Suppliers"));
 
         JButton btnMainPanel = createHeaderButton("Go to Main Panel", false);
         btnMainPanel.addActionListener(e -> mainFrame.showPanel("Dashboard"));
@@ -67,7 +59,7 @@ public class StockPanel extends JPanel {
 
         JPanel pnlTopRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
         pnlTopRight.setOpaque(false);
-        JLabel lblWelcome = new JLabel("<html><div style='text-align: right;'><span style='font-size: 16px; font-weight: bold;'>Good Morning!</span><br>Welcome POS System</div></html>");
+        JLabel lblWelcome = new JLabel("<html><div style='text-align: right;'><span style='font-size: 16px; font-weight: bold;'>Good Morning!</span><br>Welcome Hypermart</div></html>");
         lblWelcome.setForeground(Color.WHITE);
         
         JButton btnPower = createHeaderButton("\u23FB", true);
@@ -85,83 +77,52 @@ public class StockPanel extends JPanel {
         pnlMain.setBorder(new EmptyBorder(10, 25, 10, 25));
 
         // Breadcrumbs and Top Actions
-        pnlBreadcrumbRow = new JPanel(new BorderLayout());
+        JPanel pnlBreadcrumbRow = new JPanel(new BorderLayout());
         pnlBreadcrumbRow.setOpaque(false);
         
-        JLabel lblBreadcrumb = new JLabel("Main Panel > Stock");
-        lblBreadcrumb.setForeground(breadcrumbGray);
+        JLabel lblBreadcrumb = new JLabel("Main Panel > Suppliers > Suppliers List");
+        lblBreadcrumb.setForeground(new Color(100, 100, 100));
         lblBreadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         pnlBreadcrumbRow.add(lblBreadcrumb, BorderLayout.WEST);
 
-        pnlExportActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        JPanel pnlExportActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         pnlExportActions.setOpaque(false);
-        String[] exportLabels = {"Copy", "CSV", "Excel", "PDF", "Column Visibility"};
-        for (String label : exportLabels) {
-            JButton btn = createMiniButton(label, label.equals("Column Visibility") ? headerBlue : primaryBlue);
-            pnlExportActions.add(btn);
-        }
+        pnlExportActions.add(createMiniButton("Copy", primaryBlue));
+        pnlExportActions.add(createMiniButton("CSV", primaryBlue));
+        pnlExportActions.add(createMiniButton("Excel", primaryBlue));
+        pnlExportActions.add(createMiniButton("PDF", primaryBlue));
+        pnlExportActions.add(createMiniButton("Column Visibility", primaryBlue));
         pnlBreadcrumbRow.add(pnlExportActions, BorderLayout.EAST);
 
         pnlMain.add(pnlBreadcrumbRow, BorderLayout.NORTH);
 
-        // Content Area
-        JPanel pnlContent = new JPanel(new BorderLayout(0, 15));
-        pnlContent.setBackground(Color.WHITE);
+        // Search and Show Entries
+        JPanel pnlFilterBar = new JPanel(new BorderLayout());
+        pnlFilterBar.setBackground(Color.WHITE);
+        pnlFilterBar.setBorder(new EmptyBorder(20, 0, 20, 0));
 
-        // 1. Filter Bar
-        pnlFilterBar = new JPanel(new BorderLayout());
-        pnlFilterBar.setOpaque(false);
-        pnlFilterBar.setBorder(new EmptyBorder(10, 0, 10, 0));
-
-        pnlSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         pnlSearch.setOpaque(false);
-
-        JLabel lblCat = new JLabel("Category:  ");
-        lblCat.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        JComboBox<String> comboCat = new JComboBox<>(new String[]{"All Categories", "Dairy", "Bakery", "Drinks", "Fruits", "Snacks", "Beverages", "Spices", "Grains"});
-        comboCat.setPreferredSize(new Dimension(180, 35));
-        comboCat.setBackground(fieldBg);
-        SearchableComboBox.install(comboCat);
-
-        JLabel lblSearch = new JLabel("Search:  ");
-        lblSearch.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        JTextField txtSearch = new JTextField("Enter item name or code");
-        txtSearch.setPreferredSize(new Dimension(200, 35));
-        txtSearch.setForeground(Color.GRAY);
-        txtSearch.setBackground(fieldBg);
+        pnlSearch.add(new JLabel("Search"));
+        JTextField txtSearch = new JTextField("Enter supplier name");
+        txtSearch.setPreferredSize(new Dimension(300, 40));
         txtSearch.setBorder(new LineBorder(new Color(230, 230, 235)));
-
-        JButton btnFilter = createMiniButton("Filter", primaryBlue);
-        JButton btnClear = createMiniButton("Clear", Color.BLACK);
-
-        pnlSearch.add(lblCat);
-        pnlSearch.add(comboCat);
-        pnlSearch.add(lblSearch);
         pnlSearch.add(txtSearch);
-        pnlSearch.add(btnFilter);
-        pnlSearch.add(btnClear);
-
-        pnlEntries = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        pnlEntries.setOpaque(false);
-        JLabel lblShow = new JLabel("Show");
-        JTextField txtEntries = new JTextField("30");
-        txtEntries.setPreferredSize(new Dimension(50, 35));
-        txtEntries.setHorizontalAlignment(SwingConstants.CENTER);
-        txtEntries.setBackground(fieldBg);
-        txtEntries.setBorder(new LineBorder(new Color(230, 230, 235)));
-        JLabel lblEntries = new JLabel("Entries");
-        
-        pnlEntries.add(lblShow);
-        pnlEntries.add(txtEntries);
-        pnlEntries.add(lblEntries);
-
+        pnlSearch.add(createMiniButton("Search", primaryBlue));
         pnlFilterBar.add(pnlSearch, BorderLayout.WEST);
-        pnlFilterBar.add(pnlEntries, BorderLayout.EAST);
 
-        pnlContent.add(pnlFilterBar, BorderLayout.NORTH);
+        JPanel pnlShowEntries = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        pnlShowEntries.setOpaque(false);
+        pnlShowEntries.add(new JLabel("Show"));
+        pnlShowEntries.add(new JTextField("30", 3));
+        pnlShowEntries.add(new JLabel("Entries"));
+        pnlFilterBar.add(pnlShowEntries, BorderLayout.EAST);
 
-        // 2. Table Section
-        String[] columns = {"#", "ITEM CODE", "ITEM NAME", "CATEGORY", "QUANTITY", "UNIT TYPE", "MANAGE"};
+        // Table Section
+        JPanel pnlTableSection = new JPanel(new BorderLayout());
+        pnlTableSection.setBackground(Color.WHITE);
+        
+        String[] columns = {"#", "SUPPLIER CODE", "SUPPLIER NAME", "MOBILE NUMBER", "EMAIL ADDRESS", "ADDRESS", "MANAGE"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -170,11 +131,12 @@ public class StockPanel extends JPanel {
         };
 
         table = new JTable(tableModel);
-        table.setRowHeight(45);
+        table.setRowHeight(50);
         table.setShowGrid(false);
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setSelectionBackground(new Color(245, 245, 250));
 
+        // Styling Table Header
         JTableHeader header = table.getTableHeader();
         header.setPreferredSize(new Dimension(0, 45));
         header.setDefaultRenderer(new DefaultTableCellRenderer() {
@@ -191,6 +153,7 @@ public class StockPanel extends JPanel {
             }
         });
 
+        // Custom Cell Rendering
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -201,81 +164,31 @@ public class StockPanel extends JPanel {
             }
         });
 
-        // Custom Renderer for "Manage" column
-        table.getColumn("MANAGE").setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5));
-                p.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
-                JButton btn = new JButton("Add Stock");
-                btn.setBackground(Color.WHITE);
-                btn.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-                btn.setPreferredSize(new Dimension(100, 30));
-                btn.setBorder(new LineBorder(new Color(220, 220, 225)));
-                p.add(btn);
-                return p;
-            }
-        });
-
+        table.getColumnModel().getColumn(6).setCellRenderer(new ManageRenderer());
         addSampleData();
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(new LineBorder(new Color(230, 230, 235)));
         scrollPane.getViewport().setBackground(Color.WHITE);
         
-        pnlContent.add(scrollPane, BorderLayout.CENTER);
+        pnlTableSection.add(scrollPane, BorderLayout.CENTER);
+        
+        // Assemble Center
+        JPanel pnlCenter = new JPanel(new BorderLayout());
+        pnlCenter.setBackground(Color.WHITE);
+        pnlCenter.add(pnlFilterBar, BorderLayout.NORTH);
+        pnlCenter.add(pnlTableSection, BorderLayout.CENTER);
+        
+        pnlMain.add(pnlCenter, BorderLayout.CENTER);
 
-        pnlMain.add(pnlContent, BorderLayout.CENTER);
         add(pnlMain, BorderLayout.CENTER);
     }
 
     private void addSampleData() {
-        tableModel.addRow(new Object[]{"1", "6472", "Sample Product 1", "Dairy Products", "18", "Pieces", ""});
-        tableModel.addRow(new Object[]{"2", "2341", "Ambewela Milk 1L", "Dairy Products", "45", "Pieces", ""});
-        tableModel.addRow(new Object[]{"3", "9082", "Anchor Powder 400g", "Dairy Products", "12", "Pieces", ""});
-    }
-
-    private void setupResponsiveness() {
-        this.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                int width = getWidth();
-                
-                // Breadcrumb Row Responsiveness
-                if (width < 1100) {
-                    pnlBreadcrumbRow.remove(pnlExportActions);
-                    pnlBreadcrumbRow.setLayout(new GridLayout(2, 1, 0, 10));
-                    pnlBreadcrumbRow.add(pnlBreadcrumbRow.getComponent(0)); 
-                    pnlBreadcrumbRow.add(pnlExportActions);
-                    ((FlowLayout)pnlExportActions.getLayout()).setAlignment(FlowLayout.LEFT);
-                } else {
-                    pnlBreadcrumbRow.remove(pnlExportActions);
-                    pnlBreadcrumbRow.setLayout(new BorderLayout());
-                    pnlBreadcrumbRow.add(pnlExportActions, BorderLayout.EAST);
-                    ((FlowLayout)pnlExportActions.getLayout()).setAlignment(FlowLayout.RIGHT);
-                }
-
-                // Filter Bar Responsiveness
-                if (width < 950) {
-                    pnlFilterBar.remove(pnlSearch);
-                    pnlFilterBar.remove(pnlEntries);
-                    pnlFilterBar.setLayout(new GridLayout(2, 1, 0, 10));
-                    pnlFilterBar.add(pnlSearch);
-                    pnlFilterBar.add(pnlEntries);
-                    ((FlowLayout)pnlEntries.getLayout()).setAlignment(FlowLayout.LEFT);
-                } else {
-                    pnlFilterBar.remove(pnlSearch);
-                    pnlFilterBar.remove(pnlEntries);
-                    pnlFilterBar.setLayout(new BorderLayout());
-                    pnlFilterBar.add(pnlSearch, BorderLayout.WEST);
-                    pnlFilterBar.add(pnlEntries, BorderLayout.EAST);
-                    ((FlowLayout)pnlEntries.getLayout()).setAlignment(FlowLayout.RIGHT);
-                }
-                
-                revalidate();
-                repaint();
-            }
-        });
+        tableModel.addRow(new Object[]{"1", "1", "Ambewela milk pvt", "0786835535", "Supplier1@gmail.com", "", ""});
+        tableModel.addRow(new Object[]{"2", "2", "Anchor pvt", "0704688588", "supplier2@gmail.com", "140,High level Road, Nugegoda", ""});
+        tableModel.addRow(new Object[]{"3", "3", "Saman", "0712223344", "saman@gmail.com", "155 Prince Street, 11", ""});
+        tableModel.addRow(new Object[]{"4", "4", "Kellogg's", "0475432075", "Kellogg's@gmail.com", "111/A, main road, colombo 05", ""});
     }
 
     private JButton createHeaderButton(String text, boolean isCircle) {
@@ -311,7 +224,7 @@ public class StockPanel extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
                 super.paintComponent(g2);
                 g2.dispose();
             }
@@ -322,7 +235,40 @@ public class StockPanel extends JPanel {
         btn.setFocusPainted(false);
         btn.setBorder(null);
         btn.setContentAreaFilled(false);
-        btn.setPreferredSize(new Dimension(text.length() > 10 ? 150 : 100, 35));
+        btn.setPreferredSize(new Dimension(text.length() > 10 ? 140 : 70, 35));
         return btn;
+    }
+
+    class ManageRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 8));
+            p.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
+
+            JButton btnEdit = new JButton("Edit");
+            styleManageButton(btnEdit, Color.WHITE, Color.DARK_GRAY);
+            
+            JButton btnDeactivate = new JButton("Deactivate");
+            styleManageButton(btnDeactivate, disableRed, Color.WHITE);
+
+            p.add(btnEdit);
+            p.add(btnDeactivate);
+            p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 235)));
+            return p;
+        }
+
+        private void styleManageButton(JButton btn, Color bg, Color fg) {
+            btn.setFont(new Font("Segoe UI", Font.BOLD, 10));
+            btn.setBackground(bg);
+            btn.setForeground(fg);
+            btn.setPreferredSize(new Dimension(80, 30));
+            btn.setFocusPainted(false);
+            btn.setOpaque(true);
+            if (bg == Color.WHITE) {
+                btn.setBorder(new LineBorder(new Color(230, 230, 235)));
+            } else {
+                btn.setBorder(null);
+            }
+        }
     }
 }
