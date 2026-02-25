@@ -165,6 +165,8 @@ public class ExpensesListPanel extends JPanel {
         });
 
         table.getColumnModel().getColumn(5).setCellRenderer(new ManageRenderer());
+        table.getColumnModel().getColumn(5).setPreferredWidth(170);
+        table.getColumnModel().getColumn(5).setMinWidth(160);
         addSampleData();
 
         JScrollPane scrollPane = new JScrollPane(table);
@@ -241,8 +243,9 @@ public class ExpensesListPanel extends JPanel {
     class ManageRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 8));
+            JPanel p = new JPanel(new GridBagLayout());
             p.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
+            p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 235)));
 
             JButton btnEdit = new JButton("Edit");
             styleManageButton(btnEdit, Color.WHITE, Color.DARK_GRAY);
@@ -250,9 +253,11 @@ public class ExpensesListPanel extends JPanel {
             JButton btnDelete = new JButton("Delete");
             styleManageButton(btnDelete, disableRed, Color.WHITE);
 
-            p.add(btnEdit);
-            p.add(btnDelete);
-            p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 235)));
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(0, 5, 0, 5);
+            p.add(btnEdit, gbc);
+            p.add(btnDelete, gbc);
+            
             return p;
         }
 

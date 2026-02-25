@@ -21,7 +21,7 @@ public class POSPanel extends JPanel {
     private final Color lightGrayBg = new Color(245, 245, 250);
     private final Color tableHeaderBg = new Color(220, 225, 230);
     private final Color categoryBlue = new Color(21, 101, 192);
-
+    
     private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 22);
     private final Font fontBold14 = new Font("Segoe UI", Font.BOLD, 14);
     private final Font fontBold12 = new Font("Segoe UI", Font.BOLD, 12);
@@ -65,9 +65,9 @@ public class POSPanel extends JPanel {
 
         JPanel pnlHeaderActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
         pnlHeaderActions.setOpaque(false);
-
+        
         JButton btnMode = createHeaderActionBtn("Walk In-Take Away", darkBlue);
-
+        
         JPanel pnlPrinter = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         pnlPrinter.setOpaque(false);
         pnlPrinter.add(new JLabel("Printer"));
@@ -78,7 +78,7 @@ public class POSPanel extends JPanel {
         lblOn.setFont(fontBold12);
         lblOn.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
         pnlPrinter.add(lblOn);
-
+        
         JLabel lblUserIcon = new JLabel("\uD83D\uDC64"); // Profile icon placeholder
         lblUserIcon.setFont(new Font("Segoe UI", Font.PLAIN, 30));
         lblUserIcon.setForeground(primaryBlue);
@@ -86,7 +86,7 @@ public class POSPanel extends JPanel {
         pnlHeaderActions.add(btnMode);
         pnlHeaderActions.add(pnlPrinter);
         pnlHeaderActions.add(lblUserIcon);
-
+        
         pnlHeader.add(pnlHeaderActions, BorderLayout.EAST);
         add(pnlHeader, BorderLayout.NORTH);
 
@@ -94,19 +94,20 @@ public class POSPanel extends JPanel {
         JPanel pnlBody = new JPanel(new BorderLayout());
         pnlBody.setOpaque(false);
 
+
         // Center Content (Transaction + Numeric Pad)
         JPanel pnlCenter = new JPanel(new BorderLayout(5, 5));
         pnlCenter.setOpaque(false);
         pnlCenter.setBorder(new EmptyBorder(5, 5, 5, 5));
 
         // Transaction Table
-        String[] columns = { "Item Name", "Quantity", "U/Price", "Dis%", "Total" };
+        String[] columns = {"Item Name", "Quantity", "U/Price", "Dis%", "Total"};
         tableModel = new DefaultTableModel(columns, 0);
         JTable table = new JTable(tableModel);
         table.setRowHeight(40);
         table.setShowGrid(false);
         table.setIntercellSpacing(new Dimension(0, 0));
-
+        
         JTableHeader tableHeader = table.getTableHeader();
         tableHeader.setBackground(tableHeaderBg);
         tableHeader.setFont(fontBold12);
@@ -114,8 +115,7 @@ public class POSPanel extends JPanel {
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for (int i = 1; i < 5; i++)
-            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        for(int i=1; i<5; i++) table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
 
         addSampleCartData();
 
@@ -149,10 +149,10 @@ public class POSPanel extends JPanel {
 
         JPanel pnlNumGrid = new JPanel(new GridLayout(4, 4, 3, 3));
         pnlNumGrid.setOpaque(false);
-        String[] numKeys = { "7", "8", "9", "\u232B", "4", "5", "6", "+", "1", "2", "3", "-", ".", "0", "*", "Back" };
-        for (String sk : numKeys) {
+        String[] numKeys = {"7", "8", "9", "\u232B", "4", "5", "6", "+", "1", "2", "3", "-", ".", "0", "*", "Back"};
+        for(String sk : numKeys) {
             JButton b = createKeypadBtn(sk);
-            if (sk.length() == 1 && Character.isDigit(sk.charAt(0))) {
+            if(sk.length() == 1 && Character.isDigit(sk.charAt(0))) {
                 b.addActionListener(e -> txtInput.setText(txtInput.getText() + sk));
             }
             pnlNumGrid.add(b);
@@ -192,7 +192,7 @@ public class POSPanel extends JPanel {
         // Path / Search Area
         JPanel pnlRightTop = new JPanel(new BorderLayout());
         pnlRightTop.setOpaque(false);
-
+        
         JPanel pnlPath = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         pnlPath.setOpaque(false);
         pnlPath.add(new JLabel("\u2302")); // Home icon
@@ -209,7 +209,7 @@ public class POSPanel extends JPanel {
         txtSearch.setForeground(Color.GRAY);
         txtSearch.setFont(fontPlain12);
         txtSearch.setBorder(new LineBorder(new Color(220, 220, 225)));
-
+        
         pnlSearchArea.add(btnPrev, BorderLayout.WEST);
         pnlSearchArea.add(txtSearch, BorderLayout.CENTER);
         pnlSearchArea.add(btnNext, BorderLayout.EAST);
@@ -230,11 +230,11 @@ public class POSPanel extends JPanel {
         pnlCatGrid = new JPanel(new GridLayout(0, 6, 5, 5));
         pnlCatGrid.setOpaque(false);
         String[] categories = {
-                "Snacks", "Dairy Products", "Coffee & Tea Powder", "Health Products", "Bakery Items", "Beauty Products",
-                "Stationery", "Gift Cards", "Favorites", "Fruits", "Spices", "Noodles",
-                "Jam", "Meat", "Beverages", "Sauce", "Frozen Foods", "Top-up phone credit"
+            "Snacks", "Dairy Products", "Coffee & Tea Powder", "Health Products", "Bakery Items", "Beauty Products",
+            "Stationery", "Gift Cards", "Favorites", "Fruits", "Spices", "Noodles",
+            "Jam", "Meat", "Beverages", "Sauce", "Frozen Foods", "Top-up phone credit"
         };
-        for (String cat : categories) {
+        for(String cat : categories) {
             JButton b = new JButton("<html><center>" + cat + "</center></html>");
             b.setBackground(cat.equals("Favorites") ? Color.DARK_GRAY : categoryBlue);
             b.setForeground(Color.WHITE);
@@ -251,8 +251,7 @@ public class POSPanel extends JPanel {
         JPanel pnlPagination = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
         pnlPagination.setOpaque(false);
         pnlPagination.add(createPageBtn("\u2302"));
-        for (int i = 1; i <= 7; i++)
-            pnlPagination.add(createPageBtn(String.valueOf(i)));
+        for(int i=1; i<=7; i++) pnlPagination.add(createPageBtn(String.valueOf(i)));
         pnlPagination.add(createPageBtn(">"));
         pnlRight.add(pnlPagination, BorderLayout.SOUTH);
 
@@ -273,8 +272,7 @@ public class POSPanel extends JPanel {
     }
 
     private JButton createSidebarAction(String text, String icon, boolean active) {
-        JButton btn = new JButton(
-                "<html><center><span style='font-size:20px;'>" + icon + "</span><br><br>" + text + "</center></html>");
+        JButton btn = new JButton("<html><center><span style='font-size:20px;'>" + icon + "</span><br><br>" + text + "</center></html>");
         btn.setMaximumSize(new Dimension(120, 90));
         btn.setPreferredSize(new Dimension(120, 90));
         btn.setBackground(active ? activeBlueColor : Color.WHITE);
@@ -309,8 +307,7 @@ public class POSPanel extends JPanel {
     }
 
     private JButton createControlBtn(String text, String icon) {
-        JButton b = new JButton(
-                "<html><center><span style='font-size:18px;'>" + icon + "</span><br>" + text + "</center></html>");
+        JButton b = new JButton("<html><center><span style='font-size:18px;'>" + icon + "</span><br>" + text + "</center></html>");
         b.setBackground(Color.WHITE);
         b.setForeground(Color.GRAY);
         b.setFont(fontSmall);
@@ -331,26 +328,26 @@ public class POSPanel extends JPanel {
     }
 
     private void addSampleCartData() {
-        tableModel.addRow(new Object[] { "Croissant", "1", "$2.99", "0", "$2.99" });
-        tableModel.addRow(new Object[] { "Strawberry Jam", "2", "$5.00", "0", "$10.00" });
-        tableModel.addRow(new Object[] { "Vodafone Top-up", "1", "$5.00", "0", "$5.00" });
-        tableModel.addRow(new Object[] { "Wheat Braed", "2", "$2.00", "0", "$4.00" });
+        tableModel.addRow(new Object[]{"Croissant", "1", "$2.99", "0", "$2.99"});
+        tableModel.addRow(new Object[]{"Strawberry Jam", "2", "$5.00", "0", "$10.00"});
+        tableModel.addRow(new Object[]{"Vodafone Top-up", "1", "$5.00", "0", "$5.00"});
+        tableModel.addRow(new Object[]{"Wheat Braed", "2", "$2.00", "0", "$4.00"});
     }
 
     private void addSampleProducts(JPanel grid) {
-        String[] names = { "Croissant", "Choco Chip Cookie", "French Bread", "Wheat Bread", "White Bread", "Eclair" };
-        String[] prices = { "$1.50", "$1.50", "$2.50", "$2.00", "$2.00", "$2.00" };
-        for (int i = 0; i < 18; i++) {
+        String[] names = {"Croissant", "Choco Chip Cookie", "French Bread", "Wheat Bread", "White Bread", "Eclair"};
+        String[] prices = {"$1.50", "$1.50", "$2.50", "$2.00", "$2.00", "$2.00"};
+        for(int i=0; i<18; i++) {
             JPanel p = new JPanel(new BorderLayout());
             p.setBackground(Color.WHITE);
             p.setBorder(new LineBorder(new Color(235, 235, 240)));
-
+            
             JLabel lblImg = new JLabel("IMG", SwingConstants.CENTER);
             lblImg.setOpaque(true);
             lblImg.setBackground(new Color(248, 249, 250));
             lblImg.setPreferredSize(new Dimension(80, 60));
             p.add(lblImg, BorderLayout.CENTER);
-
+            
             JPanel pnlInfo = new JPanel(new GridLayout(2, 1));
             pnlInfo.setBackground(new Color(50, 50, 50));
             JLabel lblN = new JLabel(names[i % names.length], SwingConstants.CENTER);
@@ -362,7 +359,7 @@ public class POSPanel extends JPanel {
             pnlInfo.add(lblN);
             pnlInfo.add(lblP);
             p.add(pnlInfo, BorderLayout.SOUTH);
-
+            
             grid.add(p);
         }
     }
@@ -373,60 +370,83 @@ public class POSPanel extends JPanel {
             return;
         }
 
-        StringBuilder receipt = new StringBuilder();
-        receipt.append("--------------------------------------------\n");
-        receipt.append("            RETAIL SUPERMARKET            \n");
-        receipt.append("--------------------------------------------\n");
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        receipt.append("Date: ").append(sdf.format(new Date())).append("\n");
-        receipt.append("--------------------------------------------\n");
-        receipt.append(String.format("%-18s %3s %5s %9s\n", "Item", "Qty", "Disc", "Total"));
-        receipt.append("--------------------------------------------\n");
-
-        double grandTotal = 0;
+        double gross = 0;
+        double disc = 55.00; // Sample static discount for demo
+        
+        StringBuilder itemsHtml = new StringBuilder();
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String item = (String) tableModel.getValueAt(i, 0);
+            String name = (String) tableModel.getValueAt(i, 0);
             String qty = String.valueOf(tableModel.getValueAt(i, 1));
-            String discount = String.valueOf(tableModel.getValueAt(i, 3));
-            String totalStr = (String) tableModel.getValueAt(i, 4);
+            String price = String.valueOf(tableModel.getValueAt(i, 2)).replace("$", "");
+            String total = String.valueOf(tableModel.getValueAt(i, 4)).replace("$", "");
+            
+            try { gross += Double.parseDouble(total); } catch(Exception e) {}
 
-            receipt.append(String.format("%-18s %3s %5s %9s\n",
-                    item.length() > 18 ? item.substring(0, 15) + "..." : item,
-                    qty, discount + "%", totalStr));
-
-            try {
-                grandTotal += Double.parseDouble(totalStr.replace("$", ""));
-            } catch (Exception ex) {
-            }
+            itemsHtml.append("<tr>")
+                     .append("<td align='left' style='padding-top:8px;'>").append(i + 1).append("</td>")
+                     .append("<td align='left' colspan='4' style='padding-top:8px;'>").append(name.toUpperCase()).append("</td>")
+                     .append("</tr>")
+                     .append("<tr>")
+                     .append("<td></td><td></td>")
+                     .append("<td align='right'>").append(price).append("</td>")
+                     .append("<td align='right'>").append(qty).append(".0</td>")
+                     .append("<td align='right'>").append(total).append("</td>")
+                     .append("</tr>");
         }
 
-        receipt.append("--------------------------------------------\n");
-        receipt.append(String.format("GRAND TOTAL:                  $%.2f\n", grandTotal));
-        receipt.append("--------------------------------------------\n");
-        receipt.append("            THANK YOU - COME AGAIN!           \n");
-        receipt.append("--------------------------------------------\n");
+        double net = Math.max(0, gross - disc);
+        String dateStr = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss").format(new Date());
 
-        JTextArea area = new JTextArea(receipt.toString());
-        area.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        String html = "<html><body style='font-family:Segoe UI; padding:10px;'>" +
+                "<div style='text-align:center; width:280px;'>" +
+                "<h1 style='color:#4CAF50; margin:0;'>POS BILL</h1>" +
+                "<p style='margin:5px 0; font-size:11px;'>No.248, Pallegama , Embilpitiya.<br>" +
+                "0772 062 970 / Store Code: SREP</p>" +
+                "<p style='font-size:10px; margin:5px 0;'>" + dateStr + " C:66001 R:26661</p>" +
+                "</div>" +
+                "<hr style='border: 0; border-top: 1px dashed #ccc; width:280px; text-align:left;'>" +
+                "<table width='280' style='font-size:11px; border-collapse:collapse;'>" +
+                "<tr>" +
+                "<th align='left' width='10%'>Ln</th>" +
+                "<th align='left' width='40%'>Item</th>" +
+                "<th align='right' width='18%'>Price</th>" +
+                "<th align='right' width='12%'>Qty</th>" +
+                "<th align='right' width='20%'>Amount</th>" +
+                "</tr>" +
+                "<tr><td colspan='5' style='border-top:1px solid #000;'></td></tr>" +
+                itemsHtml.toString() +
+                "</table>" +
+                "<hr style='border: 0; border-top: 1px solid #000; width:280px; text-align:left;'>" +
+                "<table width='280' style='font-size:12px; font-weight:bold;'>" +
+                "<tr><td>Gross Amount</td><td align='right'>" + String.format("%.2f", gross) + "</td></tr>" +
+                "<tr><td>Promotion Discount</td><td align='right'>" + String.format("%.2f", disc) + "</td></tr>" +
+                "<tr><td style='font-size:14px;'>Net Amount</td><td align='right' style='font-size:14px;'>" + String.format("%.2f", net) + "</td></tr>" +
+                "<tr><td>Cash</td><td align='right'>" + String.format("%.2f", gross) + "</td></tr>" +
+                "</table>" +
+                "<hr style='border: 0; border-top: 1px dashed #ccc; width:280px; text-align:left;'>" +
+                "<div style='text-align:center; font-size:10px; margin-top:10px; width:280px;'>" +
+                "THANK YOU - COME AGAIN!" +
+                "</div>" +
+                "</body></html>";
+
+        JEditorPane area = new JEditorPane("text/html", html);
         area.setEditable(false);
-        area.setBackground(new Color(255, 255, 248));
-        area.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
+        area.setBackground(Color.WHITE);
+        
         JScrollPane sp = new JScrollPane(area);
-        sp.setPreferredSize(new Dimension(380, 500));
+        sp.setPreferredSize(new Dimension(380, 550));
         sp.setBorder(new LineBorder(new Color(220, 220, 220)));
 
-        // Custom Dialog with Print Button
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Sales Receipt", true);
         dialog.setLayout(new BorderLayout(10, 10));
         dialog.add(sp, BorderLayout.CENTER);
 
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         pnlButtons.setBackground(Color.WHITE);
-
+        
         JButton btnPrint = new JButton("Print Receipt");
         styleDialogButton(btnPrint, primaryBlue);
-
+        
         JButton btnClose = new JButton("Close");
         styleDialogButton(btnClose, Color.GRAY);
 
@@ -446,8 +466,7 @@ public class POSPanel extends JPanel {
         dialog.pack();
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
-
-        // Clear cart after completing transaction (once dialog is closed)
+        
         tableModel.setRowCount(0);
         txtInput.setText("");
     }
@@ -467,43 +486,56 @@ public class POSPanel extends JPanel {
             public void componentResized(ComponentEvent e) {
                 int width = getWidth();
                 int height = getHeight();
+                
+                // Threshold-based font scaling
+                float scale = 1.0f;
+                if (width < 800) scale = 0.85f;
+                else if (width < 1200) scale = 0.95f;
+                
+                updateFontsRecursive(POSPanel.this, scale);
 
-                // Adjust Right Panel Width based on aspect ratio
-                double aspectRatio = (double) width / height;
-
-                if (width > 1600) {
-                    pnlRight.setPreferredSize(new Dimension(800, 0));
-                } else if (width > 1200) {
-                    pnlRight.setPreferredSize(new Dimension(600, 0));
-                } else if (aspectRatio < 1.4) { // Square or near-square (like 15x15 inch terminals)
-                    pnlRight.setPreferredSize(new Dimension((int) (width * 0.45), 0));
-                } else if (width > 900) {
-                    pnlRight.setPreferredSize(new Dimension(450, 0));
-                } else {
-                    pnlRight.setPreferredSize(new Dimension(width / 2, 0));
+                // Adjust Right Panel Proportional Width
+                if (width > 800) {
+                    int rightW = (int)(width * 0.45);
+                    if (rightW > 700) rightW = 700;
+                    pnlRight.setPreferredSize(new Dimension(rightW, 0));
                 }
 
-                // Adjust Keypad Height based on total height
-                int keypadHeight = (int) (height * 0.42);
-                if (keypadHeight < 300)
-                    keypadHeight = 300;
-                if (keypadHeight > 450)
-                    keypadHeight = 450;
-                pnlKeypadArea.setPreferredSize(new Dimension(0, keypadHeight));
+                // Adjust Keypad Height
+                int keypadH = (int)(height * 0.45);
+                if (keypadH < 320) keypadH = 320;
+                if (keypadH > 500) keypadH = 500;
+                pnlKeypadArea.setPreferredSize(new Dimension(0, keypadH));
 
-                // Adjust Product Grid Columns
-                int rightWidth = pnlRight.getPreferredSize().width;
-                int prodCols = Math.max(2, rightWidth / 95);
-                ((GridLayout) pnlProdGrid.getLayout()).setColumns(prodCols);
-
-                // Adjust Category Grid Columns
-                int catCols = Math.max(2, rightWidth / 110);
-                ((GridLayout) pnlCatGrid.getLayout()).setColumns(catCols);
+                // Grid Columns
+                int rWidth = pnlRight.getPreferredSize().width;
+                ((GridLayout) pnlProdGrid.getLayout()).setColumns(Math.max(3, rWidth / 100));
+                ((GridLayout) pnlCatGrid.getLayout()).setColumns(Math.max(3, rWidth / 110));
 
                 revalidate();
                 repaint();
             }
         });
+    }
+
+    private void updateFontsRecursive(Container container, float scale) {
+        for (Component c : container.getComponents()) {
+            if (c instanceof JComponent) {
+                JComponent jc = (JComponent) c;
+                Font current = jc.getFont();
+                if (current != null) {
+                    Font original = (Font) jc.getClientProperty("originalFont");
+                    if (original == null) {
+                        jc.putClientProperty("originalFont", current);
+                        original = current;
+                    }
+                    jc.setFont(original.deriveFont(original.getSize2D() * scale));
+                }
+            }
+            if (c instanceof Container) {
+                updateFontsRecursive((Container) c, scale);
+            }
+        }
     }
 
     private void startTimer() {
