@@ -9,9 +9,9 @@ import java.awt.geom.RoundRectangle2D;
 
 public class LoginFrame extends JFrame {
 
-    private final Color bgColor = new Color(0, 100, 30); // Dark Green from screenshot
+    private final Color bgColor = new Color(13, 71, 161); // Deep Blue to match Dashboard
     private final Color cardBg = Color.WHITE;
-    private final Color primaryGreen = new Color(0, 80, 20);
+    private final Color primaryBlue = new Color(25, 118, 210); // Lighter blue for title/button
     private final Color inputBorder = new Color(220, 220, 220);
     private final Font titleFont = new Font("Segoe UI", Font.BOLD, 32);
     private final Font labelFont = new Font("Segoe UI", Font.PLAIN, 14);
@@ -66,7 +66,7 @@ public class LoginFrame extends JFrame {
         // Card Content
         JLabel lblTitle = new JLabel("Log In Now", SwingConstants.CENTER);
         lblTitle.setFont(titleFont);
-        lblTitle.setForeground(primaryGreen);
+        lblTitle.setForeground(primaryBlue);
         lblTitle.setBounds(0, 40, 350, 40);
         card.add(lblTitle);
 
@@ -96,11 +96,11 @@ public class LoginFrame extends JFrame {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 if (getModel().isPressed()) {
-                    g2.setColor(primaryGreen.darker());
+                    g2.setColor(primaryBlue.darker());
                 } else if (getModel().isRollover()) {
-                    g2.setColor(primaryGreen.brighter());
+                    g2.setColor(primaryBlue.brighter());
                 } else {
-                    g2.setColor(primaryGreen);
+                    g2.setColor(primaryBlue);
                 }
                 g2.fillOval(0, 0, getWidth(), getHeight());
                 g2.setColor(Color.WHITE);
