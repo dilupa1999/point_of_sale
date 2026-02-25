@@ -143,6 +143,19 @@ public class LoginFrame extends JFrame {
                 String response = com.pos.service.AuthService.login(email, password);
 
                 if (response.contains("\"success\":true") || response.contains("\"success\": true")) {
+                    // Extract token
+                    String token = "";
+                    int tokenIndex = response.indexOf("\"access_token\":");
+                    if (tokenIndex != -1) {
+                        int start = response.indexOf("\"", tokenIndex + 15) + 1;
+                        int end = response.indexOf("\"", start);
+                        if (start > 0 && end > start) {
+                            token = response.substring(start, end);
+                        }
+                    }
+                    com.pos.service.SyncService.setAccessToken(token);
+                    com.pos.service.SyncService.startSyncThread();
+
                     this.dispose();
                     new MainFrame().setVisible(true);
                 } else {

@@ -5,16 +5,22 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.List;
+import com.pos.service.POSService;
+import java.util.*;
+import com.pos.util.ReceiptPrinter;
+import com.pos.service.ConfigService;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class POSPanel extends JPanel {
 
-    private final Color headerGreen = new Color(27, 94, 32);
-    private final Color buttonGreen = new Color(46, 125, 50);
-    private final Color lightGreen = new Color(102, 187, 106);
+    private final Color headerBlue = new Color(25, 118, 210);
+    private final Color buttonBlue = new Color(43, 107, 224);
+    private final Color lightBlue = new Color(100, 181, 246);
     private final Color dangerRed = new Color(211, 47, 47);
     private final Color tableHeaderGray = new Color(224, 224, 224);
     private final Color borderGray = new Color(200, 200, 200);
@@ -28,12 +34,42 @@ public class POSPanel extends JPanel {
     private DefaultTableModel tableModel;
     private JLabel lblTime;
 
+    // --- State Variables ---
+    private boolean isRetailMode = true;
+    private com.pos.service.POSService.Customer selectedCustomer = null;
+
+    // --- Component References ---
+    private JTextField txtCustomerSearch;
+    private JTextField txtBarcode;
+    private JTextField txtRightSearch;
+    private JTextField txtDiscount;
+    private JButton btnRetail;
+    private JButton btnWholesale;
+    private JButton btnViewHold;
+    private JButton btnMinus;
+    private JButton btnPlus;
+    private JTextField txtQty;
+    private JPanel pnlResults;
+    private JLabel lblTotalItems, lblTotalQty, lblTotalAmount, lblGrandTotal;
+
+    // --- Dropdown for Customer Search ---
+    private JPopupMenu customerPopup;
+    private JList<String> customerList;
+    private DefaultListModel<String> customerListModel;
+    private List<POSService.Customer> currentSearchCustomers;
+
     public POSPanel() {
         setLayout(new BorderLayout());
         setBackground(new Color(240, 242, 245));
         initComponents();
         setupResponsiveness();
         startTimer();
+        setupCustomerSearchDropdown();
+        setupPlaceholder(txtCustomerSearch, "Search Customer...");
+        setupPlaceholder(txtBarcode, "Enter a valid barcode");
+        setupPlaceholder(txtRightSearch, "Search for items...");
+        com.pos.service.SeedData.seed(); // Temporary seed for testing
+        performItemSearch(""); // Initial load
     }
 
     private void initComponents() {
@@ -53,7 +89,7 @@ public class POSPanel extends JPanel {
 
         // 1. Billing Header
         JPanel pnlBillingHeader = new JPanel(new BorderLayout());
-        pnlBillingHeader.setBackground(headerGreen);
+        pnlBillingHeader.setBackground(headerBlue);
         pnlBillingHeader.setPreferredSize(new Dimension(0, 60));
         pnlBillingHeader.setBorder(new EmptyBorder(0, 20, 0, 20));
 
@@ -65,7 +101,7 @@ public class POSPanel extends JPanel {
         lblBillingTitle.setFont(fontTitle);
 
         lblTime = new JLabel("Loading date/time...");
-        lblTime.setForeground(new Color(200, 230, 200));
+        lblTime.setForeground(new Color(220, 230, 250));
         lblTime.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 
         pnlTitleGroup.add(lblBillingTitle);
@@ -74,9 +110,18 @@ public class POSPanel extends JPanel {
 
         JPanel pnlHeaderBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         pnlHeaderBtns.setOpaque(false);
-        pnlHeaderBtns.add(createHeaderBtn("View Hold List", Color.WHITE, Color.BLACK));
-        pnlHeaderBtns.add(createHeaderBtn("Retail", buttonGreen, Color.WHITE));
-        pnlHeaderBtns.add(createHeaderBtn("Wholesale", Color.WHITE, Color.BLACK));
+        btnRetail = createHeaderBtn("Retail", buttonBlue, Color.WHITE);
+        btnWholesale = createHeaderBtn("Wholesale", Color.WHITE, Color.BLACK);
+
+        btnRetail.addActionListener(e -> setPOSMode(true));
+        btnWholesale.addActionListener(e -> setPOSMode(false));
+
+        btnViewHold = createHeaderBtn("View Hold List", Color.WHITE, Color.BLACK);
+        btnViewHold.addActionListener(e -> showHoldListDialog());
+        updateHoldCount();
+        pnlHeaderBtns.add(btnViewHold);
+        pnlHeaderBtns.add(btnRetail);
+        pnlHeaderBtns.add(btnWholesale);
         pnlBillingHeader.add(pnlHeaderBtns, BorderLayout.EAST);
 
         pnlLeft.add(pnlBillingHeader, BorderLayout.NORTH);
@@ -95,13 +140,14 @@ public class POSPanel extends JPanel {
 
         // Customer Selection
         gbc.weightx = 0.3;
-        JPanel pnlCustomer = createInputWrapper("Customer - 0786835563");
+        txtCustomerSearch = new JTextField("Search Customer...");
+        JPanel pnlCustomer = createInputWrapper(txtCustomerSearch);
         pnlControls.add(pnlCustomer, gbc);
 
         // User Icon Button
         gbc.weightx = 0.05;
         JButton btnUser = new JButton("\uD83D\uDC64");
-        btnUser.setBackground(headerGreen);
+        btnUser.setBackground(headerBlue);
         btnUser.setForeground(Color.WHITE);
         btnUser.setPreferredSize(new Dimension(50, 45));
         btnUser.setFocusPainted(false);
@@ -110,7 +156,16 @@ public class POSPanel extends JPanel {
 
         // Barcode Input
         gbc.weightx = 0.4;
-        JPanel pnlBarcode = createInputWrapper("Enter a valid barcode");
+        txtBarcode = new JTextField("Enter a valid barcode");
+        txtBarcode.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    handleBarcodeScan();
+                }
+            }
+        });
+        JPanel pnlBarcode = createInputWrapper(txtBarcode);
         pnlControls.add(pnlBarcode, gbc);
 
         // Qty Selector
@@ -119,13 +174,42 @@ public class POSPanel extends JPanel {
         pnlQty.setBorder(new LineBorder(borderGray));
         pnlQty.setBackground(Color.WHITE);
 
-        JButton btnMinus = createQtyBtn("-");
-        JButton btnPlus = createQtyBtn("+");
-        JLabel lblQtyVal = new JLabel("1", SwingConstants.CENTER);
-        lblQtyVal.setFont(fontBold14);
+        btnMinus = createQtyBtn("-");
+        btnPlus = createQtyBtn("+");
+        txtQty = new JTextField("1");
+        txtQty.setHorizontalAlignment(SwingConstants.CENTER);
+        txtQty.setFont(fontBold14);
+        txtQty.setBorder(null);
+
+        btnPlus.addActionListener(e -> {
+            try {
+                int q = Integer.parseInt(txtQty.getText().trim());
+                txtQty.setText(String.valueOf(q + 1));
+            } catch (Exception ex) {
+                txtQty.setText("1");
+            }
+        });
+        btnMinus.addActionListener(e -> {
+            try {
+                int q = Integer.parseInt(txtQty.getText().trim());
+                if (q > 1)
+                    txtQty.setText(String.valueOf(q - 1));
+            } catch (Exception ex) {
+                txtQty.setText("1");
+            }
+        });
+
+        txtQty.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    handleBarcodeScan();
+                }
+            }
+        });
 
         pnlQty.add(btnMinus, BorderLayout.WEST);
-        pnlQty.add(lblQtyVal, BorderLayout.CENTER);
+        pnlQty.add(txtQty, BorderLayout.CENTER);
         pnlQty.add(btnPlus, BorderLayout.EAST);
         pnlControls.add(pnlQty, gbc);
 
@@ -156,10 +240,15 @@ public class POSPanel extends JPanel {
         pnlSummary.setBackground(new Color(245, 245, 245));
         pnlSummary.setBorder(new LineBorder(borderGray));
 
-        pnlSummary.add(createSummaryLabel("Total Items: 0"));
-        pnlSummary.add(createSummaryLabel("Total Quantity: 0"));
-        pnlSummary.add(createSummaryLabel("Total Amount: Rs. 0.00"));
-        pnlSummary.add(createSummaryLabel("Grand Total: Rs. 0.00"));
+        lblTotalItems = createSummaryLabel("Total Items: 0");
+        lblTotalQty = createSummaryLabel("Total Quantity: 0");
+        lblTotalAmount = createSummaryLabel("Total Amount: Rs. 0.00");
+        lblGrandTotal = createSummaryLabel("Grand Total: Rs. 0.00");
+
+        pnlSummary.add(lblTotalItems);
+        pnlSummary.add(lblTotalQty);
+        pnlSummary.add(lblTotalAmount);
+        pnlSummary.add(lblGrandTotal);
 
         pnlBillingContent.add(pnlSummary, BorderLayout.SOUTH);
 
@@ -174,19 +263,30 @@ public class POSPanel extends JPanel {
         JPanel pnlDiscount = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 20));
         pnlDiscount.setOpaque(false);
         pnlDiscount.add(new JLabel("Discount"));
-        JTextField txtDiscount = new JTextField("0.00", 15);
+        txtDiscount = new JTextField("0.00", 15);
         txtDiscount.setPreferredSize(new Dimension(0, 40));
         txtDiscount.setBorder(new LineBorder(borderGray));
         txtDiscount.setHorizontalAlignment(SwingConstants.RIGHT);
+        txtDiscount.setEditable(false);
         pnlDiscount.add(txtDiscount);
         pnlFooter.add(pnlDiscount, BorderLayout.WEST);
 
         JPanel pnlActionBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
         pnlActionBtns.setOpaque(false);
 
-        JButton btnPay = createActionBtn("\uD83D\uDCBB Pay All (Enter)", headerGreen, 180);
-        JButton btnHold = createActionBtn("\u26A0 Hold All", lightGreen, 160);
+        JButton btnPay = createActionBtn("\uD83D\uDCBB Pay All (Enter)", headerBlue, 180);
+        JButton btnHold = createActionBtn("\u26A0 Hold All", lightBlue, 160);
         JButton btnCancel = createActionBtn("\u2298 Cancel", dangerRed, 160);
+
+        btnPay.addActionListener(e -> showPaymentDialog());
+        btnCancel.addActionListener(e -> {
+            if (JOptionPane.showConfirmDialog(this, "Clear current bill?", "Cancel Bill",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                tableModel.setRowCount(0);
+                updateSummary();
+            }
+        });
+        btnHold.addActionListener(e -> handleHoldSale());
 
         JPanel pnlBtnHelper = new JPanel(new GridLayout(2, 1, 5, 5));
         pnlBtnHelper.setOpaque(false);
@@ -216,11 +316,12 @@ public class POSPanel extends JPanel {
                 new EmptyBorder(5, 10, 5, 10)));
         pnlSearchBar.setBackground(Color.WHITE);
 
-        JTextField txtSearch = new JTextField("Search for items...");
-        txtSearch.setBorder(null);
-        txtSearch.setForeground(Color.GRAY);
-        txtSearch.setFont(fontPlain14);
-        pnlSearchBar.add(txtSearch, BorderLayout.CENTER);
+        txtRightSearch = new JTextField("Search for items...");
+        txtRightSearch.setBorder(null);
+        txtRightSearch.setOpaque(false);
+        txtRightSearch.setForeground(Color.GRAY);
+        txtRightSearch.setFont(fontPlain14);
+        pnlSearchBar.add(txtRightSearch, BorderLayout.CENTER);
 
         JPanel pnlSearchIcons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         pnlSearchIcons.setOpaque(false);
@@ -231,19 +332,540 @@ public class POSPanel extends JPanel {
         pnlSearchBack.add(pnlSearchBar, BorderLayout.NORTH);
         pnlRightFinal.add(pnlSearchBack, BorderLayout.NORTH);
 
-        // Placeholder for results
-        JPanel pnlResults = new JPanel();
+        // Result results with ScrollPane
+        pnlResults = new JPanel(new GridLayout(0, 3, 5, 5));
         pnlResults.setBackground(Color.WHITE);
-        pnlRightFinal.add(pnlResults, BorderLayout.CENTER);
+        JScrollPane scrollResults = new JScrollPane(pnlResults);
+        scrollResults.setBorder(null);
+        scrollResults.getVerticalScrollBar().setUnitIncrement(16);
+        pnlRightFinal.add(scrollResults, BorderLayout.CENTER);
 
         pnlMain.add(pnlRightFinal, BorderLayout.CENTER);
-        add(pnlMain, BorderLayout.CENTER);
+        // Search Listeners
+        txtRightSearch.addActionListener(e -> performItemSearch(txtRightSearch.getText().trim()));
+
+        add(pnlMain);
+    }
+
+    private void setupCustomerSearchDropdown() {
+        customerPopup = new JPopupMenu();
+        customerListModel = new DefaultListModel<>();
+        customerList = new JList<>(customerListModel);
+        customerList.setFont(fontPlain14);
+        customerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        customerList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1) {
+                    selectCustomerFromList();
+                }
+            }
+        });
+
+        customerList.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    selectCustomerFromList();
+                }
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(customerList);
+        scroll.setPreferredSize(new Dimension(240, 150));
+        customerPopup.add(scroll);
+
+        txtCustomerSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateSearch();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateSearch();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateSearch();
+            }
+
+            private void updateSearch() {
+                SwingUtilities.invokeLater(() -> {
+                    String query = txtCustomerSearch.getText().trim();
+                    if (query.isEmpty() || (selectedCustomer != null && query.startsWith(selectedCustomer.name))) {
+                        customerPopup.setVisible(false);
+                        return;
+                    }
+                    performCustomerSearch(query);
+                });
+            }
+        });
+
+        txtCustomerSearch.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_DOWN && customerPopup.isVisible()) {
+                    customerList.requestFocus();
+                    customerList.setSelectedIndex(0);
+                }
+            }
+        });
+    }
+
+    private void selectCustomerFromList() {
+        int index = customerList.getSelectedIndex();
+        if (index != -1 && currentSearchCustomers != null && index < currentSearchCustomers.size()) {
+            selectCustomer(currentSearchCustomers.get(index));
+            customerPopup.setVisible(false);
+        }
+    }
+
+    private void performCustomerSearch(String query) {
+        currentSearchCustomers = POSService.searchCustomers(query);
+        customerListModel.clear();
+        if (currentSearchCustomers.isEmpty()) {
+            customerPopup.setVisible(false);
+            return;
+        }
+
+        for (POSService.Customer c : currentSearchCustomers) {
+            customerListModel.addElement(c.name + " (" + c.mobile + ")");
+        }
+
+        customerPopup.show(txtCustomerSearch, 0, txtCustomerSearch.getHeight());
+        txtCustomerSearch.requestFocus();
+    }
+
+    private void selectCustomer(POSService.Customer customer) {
+        this.selectedCustomer = customer;
+        txtCustomerSearch.setText(customer.name + " (" + customer.mobile + ")");
+        txtCustomerSearch.setForeground(headerBlue);
+    }
+
+    private void addItemToTable(POSService.Item item) {
+        int qty = 1;
+        try {
+            qty = Integer.parseInt(txtQty.getText().trim());
+        } catch (Exception e) {
+        }
+        double price = isRetailMode ? item.retailPrice : item.wholesalePrice;
+        double subtotal = price * qty;
+
+        // Check if item already exists in table
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            if (tableModel.getValueAt(i, 0).equals(item.name)) {
+                int oldQty = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
+                int newQty = oldQty + qty;
+                tableModel.setValueAt(String.valueOf(newQty), i, 1);
+                tableModel.setValueAt(String.format("%.2f", price * newQty), i, 5);
+                updateSummary();
+                return;
+            }
+        }
+
+        tableModel.addRow(new Object[] { item.name, String.valueOf(qty), String.format("%.2f", price), "0", "0.00",
+                String.format("%.2f", subtotal) });
+        updateSummary();
+    }
+
+    private void updateSummary() {
+        int totalItems = tableModel.getRowCount();
+        int totalQty = 0;
+        double totalAmount = 0;
+        double totalDiscount = 0;
+
+        for (int i = 0; i < totalItems; i++) {
+            totalQty += Integer.parseInt(tableModel.getValueAt(i, 1).toString());
+            totalAmount += Double.parseDouble(tableModel.getValueAt(i, 5).toString());
+            totalDiscount += Double.parseDouble(tableModel.getValueAt(i, 4).toString());
+        }
+
+        lblTotalItems.setText("Total Items: " + totalItems);
+        lblTotalQty.setText("Total Quantity: " + totalQty);
+        lblTotalAmount.setText(String.format("Total Amount: Rs. %.2f", totalAmount));
+        lblGrandTotal.setText(String.format("Grand Total: Rs. %.2f", totalAmount - totalDiscount));
+        txtDiscount.setText(String.format("%.2f", totalDiscount));
+    }
+
+    private void performItemSearch(String query) {
+        pnlResults.removeAll();
+        List<POSService.Item> items = POSService.searchItems(query);
+        for (POSService.Item item : items) {
+            JButton btn = new JButton("<html><center>" + item.name + "<br>Rs."
+                    + (isRetailMode ? item.retailPrice : item.wholesalePrice) + "</center></html>");
+            btn.setFont(fontBold12);
+            btn.setBackground(Color.WHITE);
+            btn.setBorder(new LineBorder(borderGray));
+            btn.addActionListener(e -> addItemToTable(item));
+            pnlResults.add(btn);
+        }
+        pnlResults.revalidate();
+        pnlResults.repaint();
+    }
+
+    private void handleBarcodeScan() {
+        String barcode = txtBarcode.getText().trim();
+        if (barcode.isEmpty() || barcode.equals("Enter a valid barcode")) {
+            return;
+        }
+
+        POSService.Item item = POSService.findItemByBarcode(barcode);
+        if (item != null) {
+            addItemToTable(item);
+            txtBarcode.setText("");
+            // Reset qty to 1 after scan as per typical POS behavior
+            txtQty.setText("1");
+            txtBarcode.requestFocus();
+        } else {
+            JOptionPane.showMessageDialog(this, "Invalid Barcode: " + barcode, "Error", JOptionPane.ERROR_MESSAGE);
+            txtBarcode.selectAll();
+            txtBarcode.requestFocus();
+        }
+    }
+
+    private void showPaymentDialog() {
+        if (selectedCustomer == null) {
+            JOptionPane.showMessageDialog(this, "Please select a customer first!", "Customer Required",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (tableModel.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "No items in bill!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Payment", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(900, 600);
+        dialog.setLocationRelativeTo(this);
+
+        double subTotal = Double.parseDouble(lblTotalAmount.getText().replace("Total Amount: Rs. ", ""));
+        double initialDiscount = Double.parseDouble(txtDiscount.getText());
+        final double[] grandTotal = { subTotal - initialDiscount };
+
+        JPanel pnlMain = new JPanel(new GridLayout(1, 2, 20, 0));
+        pnlMain.setBorder(new EmptyBorder(20, 20, 20, 20));
+        pnlMain.setBackground(Color.WHITE);
+
+        // --- Left Column: Payment Details ---
+        JPanel pnlLeftCol = new JPanel(new GridBagLayout());
+        pnlLeftCol.setBackground(Color.WHITE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.weightx = 1.0;
+
+        JTextField txtReceived = new JTextField();
+        txtReceived.setFont(fontTitle);
+        JTextField txtPaying = new JTextField(String.format("%.2f", grandTotal[0]));
+        txtPaying.setEditable(false);
+        JTextField txtPoints = new JTextField("0");
+        JTextField txtAddPoints = new JTextField("0");
+        JTextField txtCommission = new JTextField("0.00");
+        JTextField txtChange = new JTextField("0.00");
+        txtChange.setEditable(false);
+        txtChange.setForeground(dangerRed);
+        txtChange.setFont(fontTitle);
+
+        JComboBox<String> comboType = new JComboBox<>(
+                new String[] { "CASH", "CARD", "CHEQUE", "CREDIT", "BANKTRANSFER" });
+
+        int row = 0;
+        addLabelValue(pnlLeftCol, "Received Amount", txtReceived, gbc, row++);
+        addLabelValue(pnlLeftCol, "Paying Amount", txtPaying, gbc, row++);
+        addLabelValue(pnlLeftCol, "Payment in points", txtPoints, gbc, row++);
+        addLabelValue(pnlLeftCol, "Change Return", txtChange, gbc, row++);
+        addLabelValue(pnlLeftCol, "Add Points", txtAddPoints, gbc, row++);
+        addLabelValue(pnlLeftCol, "Commission", txtCommission, gbc, row++);
+        addLabelValue(pnlLeftCol, "Payment Type", comboType, gbc, row++);
+
+        JLabel lblDue = new JLabel("Due Amount: 0.00");
+        lblDue.setForeground(dangerRed);
+        lblDue.setFont(fontBold14);
+        gbc.gridx = 0;
+        gbc.gridy = row++;
+        gbc.gridwidth = 2;
+        pnlLeftCol.add(lblDue, gbc);
+
+        // --- Right Column: Summary & Discounts ---
+        JPanel pnlRightCol = new JPanel(new GridBagLayout());
+        pnlRightCol.setBackground(new Color(250, 250, 250));
+        pnlRightCol.setBorder(new LineBorder(borderGray));
+        GridBagConstraints gbcR = new GridBagConstraints();
+        gbcR.fill = GridBagConstraints.HORIZONTAL;
+        gbcR.insets = new Insets(8, 15, 8, 15);
+        gbcR.weightx = 1.0;
+
+        JLabel lblTotalP = new JLabel("TOTAL PRODUCTS: " + tableModel.getRowCount());
+        JLabel lblTotalA = new JLabel("TOTAL AMOUNT: Rs. " + String.format("%.2f", subTotal));
+        JLabel lblDiscTill = new JLabel("DISCOUNT (TILL NOW): Rs. " + String.format("%.2f", initialDiscount));
+
+        JTextField txtOrderDiscPerc = new JTextField("0");
+        JTextField txtOrderDiscRs = new JTextField("0");
+        JLabel lblGrand = new JLabel("GRAND TOTAL: Rs. " + String.format("%.2f", grandTotal[0]));
+        lblGrand.setFont(fontTitle);
+        lblGrand.setForeground(headerBlue);
+
+        JTextArea txtNotes = new JTextArea(3, 20);
+        txtNotes.setBorder(new LineBorder(borderGray));
+
+        int r = 0;
+        gbcR.gridy = r++;
+        pnlRightCol.add(lblTotalP, gbcR);
+        gbcR.gridy = r++;
+        pnlRightCol.add(lblTotalA, gbcR);
+        gbcR.gridy = r++;
+        pnlRightCol.add(lblDiscTill, gbcR);
+
+        gbcR.gridy = r++;
+        pnlRightCol.add(new JLabel("ORDER DISCOUNT (%)"), gbcR);
+        gbcR.gridy = r++;
+        pnlRightCol.add(txtOrderDiscPerc, gbcR);
+        gbcR.gridy = r++;
+        pnlRightCol.add(new JLabel("ORDER DISCOUNT (Rs.)"), gbcR);
+        gbcR.gridy = r++;
+        pnlRightCol.add(txtOrderDiscRs, gbcR);
+        gbcR.gridy = r++;
+        pnlRightCol.add(lblGrand, gbcR);
+        gbcR.gridy = r++;
+        pnlRightCol.add(new JLabel("NOTES"), gbcR);
+        gbcR.gridy = r++;
+        pnlRightCol.add(new JScrollPane(txtNotes), gbcR);
+
+        // Quick buttons for %
+        JPanel pnlQuick = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pnlQuick.setOpaque(false);
+        String[] percents = { "5%", "10%", "15%", "20%", "25%", "Clear" };
+        for (String p : percents) {
+            JButton b = new JButton(p);
+            b.setFont(new Font("Segoe UI", Font.PLAIN, 10));
+            b.setMargin(new Insets(2, 5, 2, 5));
+            b.addActionListener(e -> {
+                if (p.equals("Clear"))
+                    txtOrderDiscPerc.setText("0");
+                else
+                    txtOrderDiscPerc.setText(p.replace("%", ""));
+                updateGrandTotal(txtOrderDiscPerc, txtOrderDiscRs, subTotal, initialDiscount, lblGrand, txtPaying,
+                        grandTotal);
+            });
+            pnlQuick.add(b);
+        }
+        gbcR.gridy = r++;
+        pnlRightCol.add(pnlQuick, gbcR);
+
+        // --- Logic for updates ---
+        txtOrderDiscPerc.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                updateGrandTotal(txtOrderDiscPerc, txtOrderDiscRs, subTotal, initialDiscount, lblGrand, txtPaying,
+                        grandTotal);
+            }
+        });
+        txtOrderDiscRs.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                txtOrderDiscPerc.setText("0");
+                updateGrandTotal(txtOrderDiscPerc, txtOrderDiscRs, subTotal, initialDiscount, lblGrand, txtPaying,
+                        grandTotal);
+            }
+        });
+        txtReceived.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                try {
+                    double rec = Double.parseDouble(txtReceived.getText());
+                    double pay = grandTotal[0];
+                    if (rec >= pay) {
+                        txtChange.setText(String.format("%.2f", rec - pay));
+                        lblDue.setText("Due Amount: 0.00");
+                    } else {
+                        txtChange.setText("0.00");
+                        lblDue.setText(String.format("Due Amount: %.2f", pay - rec));
+                    }
+                } catch (Exception ex) {
+                    txtChange.setText("0.00");
+                    lblDue.setText(String.format("Due Amount: %.2f", grandTotal[0]));
+                }
+            }
+        });
+
+        pnlMain.add(pnlLeftCol);
+        pnlMain.add(pnlRightCol);
+        dialog.add(pnlMain, BorderLayout.CENTER);
+
+        // --- Footer Buttons ---
+        JPanel pnlSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
+        pnlSouth.setBackground(Color.WHITE);
+        JButton btnPay = createActionBtn("Pay", headerBlue, 150);
+        JButton btnCancel = createActionBtn("Cancel", dangerRed, 150);
+
+        btnPay.addActionListener(e -> {
+            try {
+                double totalPaid = Double.parseDouble(txtPaying.getText());
+                double received = txtReceived.getText().isEmpty() ? 0 : Double.parseDouble(txtReceived.getText());
+                double change = Double.parseDouble(txtChange.getText());
+                double discountRs = Double.parseDouble(txtOrderDiscRs.getText()) + initialDiscount;
+                String type = comboType.getSelectedItem().toString();
+                String notes = txtNotes.getText();
+
+                double comm = 0;
+                try {
+                    comm = Double.parseDouble(txtCommission.getText().trim());
+                } catch (Exception ex) {
+                }
+                processPaymentExtended(totalPaid, received, change, discountRs, type, notes, comm);
+                dialog.dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog, "Please enter valid amounts!", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnCancel.addActionListener(e -> dialog.dispose());
+        pnlSouth.add(btnPay);
+        pnlSouth.add(btnCancel);
+        dialog.add(pnlSouth, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
+    private void addLabelValue(JPanel pnl, String label, JComponent comp, GridBagConstraints gbc, int row) {
+        gbc.gridy = row;
+        gbc.gridx = 0;
+        gbc.weightx = 0.3;
+        pnl.add(new JLabel(label), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        pnl.add(comp, gbc);
+    }
+
+    private void updateGrandTotal(JTextField perc, JTextField rs, double sub, double initDisc, JLabel lblG,
+            JTextField txtP, double[] grand) {
+        try {
+            double p = Double.parseDouble(perc.getText());
+            double r = Double.parseDouble(rs.getText());
+            double totalBase = sub - initDisc;
+            double discAmount = r;
+            if (p > 0) {
+                discAmount = totalBase * (p / 100.0);
+                rs.setText(String.format("%.2f", discAmount));
+            }
+            grand[0] = totalBase - discAmount;
+            lblG.setText("GRAND TOTAL: Rs. " + String.format("%.2f", grand[0]));
+            txtP.setText(String.format("%.2f", grand[0]));
+        } catch (Exception ex) {
+        }
+    }
+
+    private void processPaymentExtended(double grandTotal, double received, double change, double totalDiscount,
+            String type, String notes, double commission) {
+        if (tableModel.getRowCount() == 0)
+            return;
+
+        try {
+            int customerId = (selectedCustomer != null) ? selectedCustomer.id : 0;
+            String salesCode = "SALE-" + System.currentTimeMillis();
+
+            // Ensure schema consistency
+            try {
+                model.MySQL.execute("ALTER TABLE `sales` ADD COLUMN `notes` TEXT");
+            } catch (Exception ex) {
+            }
+            try {
+                model.MySQL.execute("ALTER TABLE `sales` ADD COLUMN `commission` DECIMAL(14,2) DEFAULT 0.00");
+            } catch (Exception ex) {
+            }
+
+            // Insert into sales table
+            String sql = "INSERT INTO `sales` (`sales_code`, `customers_id`, `users_id`, `pos_system_id`, `warranty_period`, `warranty_card_no`, `notes`, `commission`, `is_synced`) VALUES ("
+                    + "'" + salesCode + "', " + (customerId == 0 ? "NULL" : customerId) + ", 1, '"
+                    + ConfigService.getPosSystemId() + "', '', '', '" + notes.replace("'", "''") + "', " + commission
+                    + ", 0)";
+            model.MySQL.execute(sql);
+
+            java.sql.ResultSet rs = model.MySQL.execute("SELECT LAST_INSERT_ID()");
+            if (rs.next()) {
+                int saleId = rs.getInt(1);
+                double subTotal = Double.parseDouble(lblTotalAmount.getText().replace("Total Amount: Rs. ", ""));
+                double due = Math.max(0, grandTotal - received);
+
+                String paymentSql = "INSERT INTO `payments` (`sales_id`, `users_id`, `sub_total`, `grand_total`, `paid_amount`, `due_amount`, `discount`, `received_amount`, `change_return_amount`, `payment_type`, `payment_status`) VALUES ("
+                        + saleId + ", 1, " + subTotal + ", " + grandTotal + ", " + (received - change) + ", " + due
+                        + ", " + totalDiscount + ", " + received + ", " + change + ", '" + type + "', 'PAID')";
+                model.MySQL.execute(paymentSql);
+
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    String itemName = tableModel.getValueAt(i, 0).toString();
+                    int qty = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
+                    double price = Double.parseDouble(tableModel.getValueAt(i, 2).toString());
+                    java.sql.ResultSet rsItem = model.MySQL.execute(
+                            "SELECT id FROM items WHERE item_name = '" + itemName.replace("'", "''") + "' LIMIT 1");
+                    if (rsItem.next()) {
+                        int itemId = rsItem.getInt("id");
+                        model.MySQL.execute(
+                                "INSERT INTO `sales_items` (`sales_id`, `items_id`, `quantity`, `price`, `discount`, `discount_type`) VALUES ("
+                                        + saleId + ", " + itemId + ", " + qty + ", " + price + ", 0, 'FIXED')");
+                    }
+                }
+
+                // Prepare and trigger printing
+                Map<String, Object> printData = new HashMap<>();
+                printData.put("shop_name", "Hypermart");
+                printData.put("address", "Kandy");
+                printData.put("phone", "0712345678 / 0771234567");
+                printData.put("sales_code", salesCode);
+                printData.put("date", new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()));
+                printData.put("time", new java.text.SimpleDateFormat("HH:mm:ss").format(new java.util.Date()));
+                printData.put("customer", selectedCustomer != null ? selectedCustomer.name : "CUSTOMER");
+                printData.put("ptype", type);
+                printData.put("user", "SUPERADMIN");
+                printData.put("stype", isRetailMode ? "RETAIL" : "WHOLESALE");
+
+                List<Map<String, Object>> printItems = new ArrayList<>();
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("ln", i + 1);
+                    item.put("item", tableModel.getValueAt(i, 0).toString());
+                    item.put("qty", tableModel.getValueAt(i, 1).toString());
+                    item.put("unit", "Pcs");
+                    item.put("market_price", "0.00");
+                    item.put("our_price", tableModel.getValueAt(i, 2).toString());
+                    item.put("amount", tableModel.getValueAt(i, 3).toString());
+                    printItems.add(item);
+                }
+                printData.put("items", printItems);
+
+                printData.put("total", String.format("%.2f", subTotal));
+                printData.put("net_total", String.format("%.2f", grandTotal));
+                printData.put("received", String.format("%.2f", received));
+                printData.put("paid", String.format("%.2f", received - change));
+                printData.put("change", String.format("%.2f", change));
+                printData.put("due", String.format("%.2f", due));
+                printData.put("count", String.valueOf(tableModel.getRowCount()));
+
+                ReceiptPrinter.printReceipt(printData);
+            }
+            JOptionPane.showMessageDialog(this, "Sale completed successfully!", "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+            tableModel.setRowCount(0);
+            updateSummary();
+            updateHoldCount();
+            selectedCustomer = null;
+            txtCustomerSearch.setText("Search Customer...");
+            txtCustomerSearch.setForeground(Color.GRAY);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void setupResponsiveness() {
-        this.addComponentListener(new ComponentAdapter() {
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
-            public void componentResized(ComponentEvent e) {
+            public void componentResized(java.awt.event.ComponentEvent e) {
                 revalidate();
                 repaint();
             }
@@ -251,9 +873,10 @@ public class POSPanel extends JPanel {
     }
 
     private void startTimer() {
-        Timer timer = new Timer(1000, e -> {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
-            lblTime.setText(sdf.format(new Date()));
+        javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
+            if (lblTime != null)
+                lblTime.setText(sdf.format(new java.util.Date()));
         });
         timer.start();
     }
@@ -271,13 +894,27 @@ public class POSPanel extends JPanel {
         return btn;
     }
 
-    private JPanel createInputWrapper(String placeholder) {
+    private void setPOSMode(boolean retail) {
+        this.isRetailMode = retail;
+        btnRetail.setBackground(retail ? buttonBlue : Color.WHITE);
+        btnRetail.setForeground(retail ? Color.WHITE : Color.BLACK);
+        btnWholesale.setBackground(!retail ? buttonBlue : Color.WHITE);
+        btnWholesale.setForeground(!retail ? Color.WHITE : Color.BLACK);
+
+        // Refresh item grid to show correct prices
+        String query = txtRightSearch.getText().trim();
+        if (query.equals("Search for items...")) {
+            query = ""; // Show all items if search box is still empty
+        }
+        performItemSearch(query);
+    }
+
+    private JPanel createInputWrapper(JTextField txt) {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(fieldBg);
         p.setBorder(new LineBorder(borderGray));
         p.setPreferredSize(new Dimension(0, 45));
 
-        JTextField txt = new JTextField(placeholder);
         txt.setBorder(new EmptyBorder(0, 10, 0, 10));
         txt.setOpaque(false);
         txt.setForeground(Color.GRAY);
@@ -287,13 +924,24 @@ public class POSPanel extends JPanel {
     }
 
     private JButton createQtyBtn(String text) {
-        JButton b = new JButton(text);
-        b.setFont(fontBold14);
-        b.setBackground(new Color(245, 245, 250));
-        b.setFocusPainted(false);
-        b.setBorder(null);
-        b.setPreferredSize(new Dimension(45, 45));
-        return b;
+        JButton btn = new JButton(text);
+        btn.setPreferredSize(new Dimension(50, 45));
+        btn.setFont(fontBold14);
+        btn.setBackground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setFocusable(false); // keep focus in text fields
+        btn.setBorder(null);
+
+        btn.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    handleBarcodeScan();
+                }
+            }
+        });
+
+        return btn;
     }
 
     private JLabel createSummaryLabel(String text) {
@@ -301,6 +949,252 @@ public class POSPanel extends JPanel {
         lbl.setFont(fontBold14);
         lbl.setForeground(new Color(50, 50, 50));
         return lbl;
+    }
+
+    private void setupPlaceholder(JTextField field, String placeholder) {
+        field.setText(placeholder);
+        field.setForeground(Color.GRAY);
+
+        field.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (field.getText().equals(placeholder)) {
+                    field.setText("");
+                    field.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (field.getText().isEmpty()) {
+                    field.setText(placeholder);
+                    field.setForeground(Color.GRAY);
+                }
+            }
+        });
+    }
+
+    private void updateHoldCount() {
+        try {
+            java.sql.ResultSet rs = model.MySQL.execute("SELECT COUNT(*) FROM payments WHERE payment_status = 'HOLD'");
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                btnViewHold.setText("View Hold List (" + count + ")");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleHoldSale() {
+        if (tableModel.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "No items to hold!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String refName = JOptionPane.showInputDialog(this, "Enter a name for this bill:", "Hold Bill",
+                JOptionPane.QUESTION_MESSAGE);
+        if (refName == null || refName.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            // Ensure hold_ref_name column exists
+            try {
+                model.MySQL
+                        .execute("ALTER TABLE `sales` ADD COLUMN `hold_ref_name` VARCHAR(255) AFTER `pos_system_id`");
+            } catch (Exception ex) {
+            }
+
+            double total = Double.parseDouble(lblTotalAmount.getText().replace("Total Amount: Rs. ", ""));
+            int customerId = (selectedCustomer != null) ? selectedCustomer.id : 0;
+            String salesCode = "HOLD-" + System.currentTimeMillis();
+
+            String sql = "INSERT INTO `sales` (`sales_code`, `customers_id`, `users_id`, `pos_system_id`, `hold_ref_name`, `warranty_period`, `warranty_card_no`, `is_synced`) VALUES ("
+                    + "'" + salesCode + "', " + (customerId == 0 ? "NULL" : customerId) + ", 1, '"
+                    + ConfigService.getPosSystemId() + "', '" + refName.replace("'", "''") + "', '', '', 0)";
+            model.MySQL.execute(sql);
+
+            java.sql.ResultSet rs = model.MySQL.execute("SELECT LAST_INSERT_ID()");
+            if (rs.next()) {
+                int saleId = rs.getInt(1);
+                String paymentSql = "INSERT INTO `payments` (`sales_id`, `users_id`, `sub_total`, `grand_total`, `paid_amount`, `due_amount`, `discount`, `received_amount`, `change_return_amount`, `payment_status`) VALUES ("
+                        + saleId + ", 1, " + total + ", " + total + ", 0, " + total + ", 0, 0, 0, 'HOLD')";
+                model.MySQL.execute(paymentSql);
+
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    String itemName = tableModel.getValueAt(i, 0).toString();
+                    int qty = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
+                    double price = Double.parseDouble(tableModel.getValueAt(i, 2).toString());
+                    java.sql.ResultSet rsItem = model.MySQL.execute(
+                            "SELECT id FROM items WHERE item_name = '" + itemName.replace("'", "''") + "' LIMIT 1");
+                    if (rsItem.next()) {
+                        int itemId = rsItem.getInt("id");
+                        model.MySQL.execute(
+                                "INSERT INTO `sales_items` (`sales_id`, `items_id`, `quantity`, `price`, `discount`, `discount_type`) VALUES ("
+                                        + saleId + ", " + itemId + ", " + qty + ", " + price + ", 0, 'FIXED')");
+                    }
+                }
+            }
+            JOptionPane.showMessageDialog(this, "Sale put on HOLD!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            tableModel.setRowCount(0);
+            updateSummary();
+            updateHoldCount();
+            selectedCustomer = null;
+            txtCustomerSearch.setText("Search Customer...");
+            txtCustomerSearch.setForeground(Color.GRAY);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showHoldListDialog() {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Hold List", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(600, 450);
+        dialog.setLocationRelativeTo(this);
+
+        String[] headers = { "ID", "Date", "Bill Name", "Amount", "Actions" };
+        DefaultTableModel holdModel = new DefaultTableModel(headers, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 4;
+            }
+        };
+        JTable holdTable = new JTable(holdModel);
+        holdTable.setRowHeight(40);
+
+        // Set column widths
+        holdTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+        holdTable.getColumnModel().getColumn(1).setPreferredWidth(140);
+        holdTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+        holdTable.getColumnModel().getColumn(3).setPreferredWidth(80);
+        holdTable.getColumnModel().getColumn(4).setPreferredWidth(200);
+
+        try {
+            // Ensure schema consistency
+            try {
+                model.MySQL
+                        .execute("ALTER TABLE `sales` ADD COLUMN `hold_ref_name` VARCHAR(255) AFTER `pos_system_id`");
+            } catch (Exception ex) {
+            }
+            try {
+                model.MySQL.execute("ALTER TABLE `sales` ADD COLUMN `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+                model.MySQL
+                        .execute("ALTER TABLE `payments` ADD COLUMN `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+                model.MySQL.execute(
+                        "UPDATE `sales` SET `created_at` = CURRENT_TIMESTAMP WHERE `created_at` IS NULL OR `created_at` = '0000-00-00 00:00:00'");
+                model.MySQL.execute(
+                        "UPDATE `payments` SET `created_at` = CURRENT_TIMESTAMP WHERE `created_at` IS NULL OR `created_at` = '0000-00-00 00:00:00'");
+            } catch (Exception ex) {
+            }
+
+            java.sql.ResultSet rs = model.MySQL.execute(
+                    "SELECT s.id, COALESCE(p.created_at, s.created_at) as created_at, s.hold_ref_name, p.grand_total FROM sales s JOIN payments p ON s.id = p.sales_id WHERE p.payment_status = 'HOLD' ORDER BY created_at DESC");
+            while (rs.next()) {
+                String dateStr = rs.getString("created_at");
+                if (dateStr == null || dateStr.isEmpty()) {
+                    dateStr = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date());
+                }
+                holdModel.addRow(new Object[] {
+                        rs.getInt("id"),
+                        dateStr,
+                        rs.getString("hold_ref_name"),
+                        String.format("%.2f", rs.getDouble("grand_total")),
+                        ""
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Custom renderer/editor for Add/Delete buttons
+        holdTable.getColumnModel().getColumn(4).setCellRenderer(new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+                JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 2));
+                p.setOpaque(true);
+                if (isSelected) {
+                    p.setBackground(table.getSelectionBackground());
+                } else {
+                    p.setBackground(table.getBackground());
+                }
+                JButton btnAdd = new JButton("Add Bill");
+                JButton btnDel = new JButton("Delete");
+                btnAdd.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+                btnDel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+                btnAdd.setPreferredSize(new Dimension(80, 25));
+                btnDel.setPreferredSize(new Dimension(80, 25));
+                btnAdd.setBackground(headerBlue);
+                btnAdd.setForeground(Color.WHITE);
+                btnDel.setBackground(dangerRed);
+                btnDel.setForeground(Color.WHITE);
+                p.add(btnAdd);
+                p.add(btnDel);
+                return p;
+            }
+        });
+
+        holdTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = holdTable.rowAtPoint(e.getPoint());
+                int col = holdTable.columnAtPoint(e.getPoint());
+                if (col == 4) {
+                    int saleId = (int) holdModel.getValueAt(row, 0);
+                    // Check which button was clicked based on position
+                    Rectangle rect = holdTable.getCellRect(row, col, true);
+                    double clickX = e.getX() - rect.getX();
+                    if (clickX < rect.getWidth() / 2) {
+                        resumeSale(saleId);
+                        dialog.dispose();
+                    } else {
+                        if (JOptionPane.showConfirmDialog(dialog, "Delete this hold record?", "Confirm",
+                                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                            deleteHoldSale(saleId);
+                            holdModel.removeRow(row);
+                            updateHoldCount();
+                        }
+                    }
+                }
+            }
+        });
+
+        dialog.add(new JScrollPane(holdTable), BorderLayout.CENTER);
+        dialog.setVisible(true);
+    }
+
+    private void deleteHoldSale(int saleId) {
+        try {
+            model.MySQL.execute("DELETE FROM payments WHERE sales_id = " + saleId);
+            model.MySQL.execute("DELETE FROM sales_items WHERE sales_id = " + saleId);
+            model.MySQL.execute("DELETE FROM sales WHERE id = " + saleId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void resumeSale(int saleId) {
+        try {
+            tableModel.setRowCount(0);
+            java.sql.ResultSet rs = model.MySQL.execute(
+                    "SELECT i.item_name, si.quantity, si.price FROM sales_items si JOIN items i ON si.items_id = i.id WHERE si.sales_id = "
+                            + saleId);
+            while (rs.next()) {
+                double subtotal = rs.getDouble("price") * rs.getInt("quantity");
+                tableModel.addRow(new Object[] { rs.getString("item_name"), rs.getString("quantity"),
+                        String.format("%.2f", rs.getDouble("price")), "0", "0.00", String.format("%.2f", subtotal) });
+            }
+            // Delete the hold records so they don't stay in list
+            model.MySQL.execute("DELETE FROM payments WHERE sales_id = " + saleId);
+            model.MySQL.execute("DELETE FROM sales_items WHERE sales_id = " + saleId);
+            model.MySQL.execute("DELETE FROM sales WHERE id = " + saleId);
+            updateSummary();
+            updateHoldCount();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private JButton createActionBtn(String text, Color bg, int width) {
