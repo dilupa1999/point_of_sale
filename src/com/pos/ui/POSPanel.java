@@ -3,7 +3,6 @@ package com.pos.ui;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
@@ -13,30 +12,21 @@ import java.util.Date;
 
 public class POSPanel extends JPanel {
 
-    private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color darkBlue = new Color(0, 51, 102);
-    private final Color activeBlueColor = new Color(1, 87, 155);
-    private final Color vibrantGreen = new Color(0, 200, 83);
-    private final Color sidebarBg = new Color(255, 255, 255);
-    private final Color lightGrayBg = new Color(245, 245, 250);
-    private final Color tableHeaderBg = new Color(220, 225, 230);
-    private final Color categoryBlue = new Color(21, 101, 192);
-    
-    private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 22);
-    private final Font fontBold14 = new Font("Segoe UI", Font.BOLD, 14);
-    private final Font fontBold12 = new Font("Segoe UI", Font.BOLD, 12);
-    private final Font fontPlain12 = new Font("Segoe UI", Font.PLAIN, 12);
-    private final Font fontSmall = new Font("Segoe UI", Font.PLAIN, 10);
+    private final Color headerGreen = new Color(27, 94, 32);
+    private final Color buttonGreen = new Color(46, 125, 50);
+    private final Color lightGreen = new Color(102, 187, 106);
+    private final Color dangerRed = new Color(211, 47, 47);
+    private final Color tableHeaderGray = new Color(224, 224, 224);
+    private final Color borderGray = new Color(200, 200, 200);
+    private final Color fieldBg = new Color(245, 245, 250);
 
-    private JTextField txtInput;
+    private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 18);
+    private final Font fontBold14 = new Font("Segoe UI", Font.BOLD, 14);
+    private final Font fontPlain14 = new Font("Segoe UI", Font.PLAIN, 14);
+    private final Font fontBold12 = new Font("Segoe UI", Font.BOLD, 12);
+
     private DefaultTableModel tableModel;
     private JLabel lblTime;
-
-    private JPanel pnlRight;
-    private JPanel pnlProdGrid;
-    private JPanel pnlCatGrid;
-    private JScrollPane scrollCart;
-    private JPanel pnlKeypadArea;
 
     public POSPanel() {
         setLayout(new BorderLayout());
@@ -47,495 +37,217 @@ public class POSPanel extends JPanel {
     }
 
     private void initComponents() {
-        // --- Top Header ---
-        JPanel pnlHeader = new JPanel(new BorderLayout());
-        pnlHeader.setBackground(Color.WHITE);
-        pnlHeader.setPreferredSize(new Dimension(0, 80));
-        pnlHeader.setBorder(new EmptyBorder(5, 20, 5, 20));
+        // --- Split Pane Layout ---
+        setLayout(new BorderLayout(5, 5));
+        setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        JPanel pnlTitleArea = new JPanel(new GridLayout(2, 1));
-        pnlTitleArea.setOpaque(false);
-        JLabel lblTitle = new JLabel("RETAIL SUPERMARKET");
-        lblTitle.setFont(fontTitle);
-        lblTime = new JLabel("05/02/2024 10:45:34 AM"); // Sample date, timer updates it
-        lblTime.setForeground(Color.GRAY);
-        pnlTitleArea.add(lblTitle);
-        pnlTitleArea.add(lblTime);
-        pnlHeader.add(pnlTitleArea, BorderLayout.WEST);
+        JPanel pnlMain = new JPanel(new BorderLayout(5, 0));
+        pnlMain.setOpaque(false);
 
-        JPanel pnlHeaderActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
-        pnlHeaderActions.setOpaque(false);
-        
-        JButton btnMode = createHeaderActionBtn("Walk In-Take Away", darkBlue);
-        
-        JPanel pnlPrinter = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        pnlPrinter.setOpaque(false);
-        pnlPrinter.add(new JLabel("Printer"));
-        JLabel lblOn = new JLabel(" ON ");
-        lblOn.setOpaque(true);
-        lblOn.setBackground(vibrantGreen);
-        lblOn.setForeground(Color.WHITE);
-        lblOn.setFont(fontBold12);
-        lblOn.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
-        pnlPrinter.add(lblOn);
-        
-        JLabel lblUserIcon = new JLabel("\uD83D\uDC64"); // Profile icon placeholder
-        lblUserIcon.setFont(new Font("Segoe UI", Font.PLAIN, 30));
-        lblUserIcon.setForeground(primaryBlue);
+        // --- Left Panel (Billing Area) ---
+        JPanel pnlLeft = new JPanel(new BorderLayout(0, 5));
+        pnlLeft.setOpaque(true);
+        pnlLeft.setBackground(Color.WHITE);
+        pnlLeft.setBorder(new LineBorder(borderGray));
+        pnlLeft.setPreferredSize(new Dimension(850, 0));
 
-        pnlHeaderActions.add(btnMode);
-        pnlHeaderActions.add(pnlPrinter);
-        pnlHeaderActions.add(lblUserIcon);
-        
-        pnlHeader.add(pnlHeaderActions, BorderLayout.EAST);
-        add(pnlHeader, BorderLayout.NORTH);
+        // 1. Billing Header
+        JPanel pnlBillingHeader = new JPanel(new BorderLayout());
+        pnlBillingHeader.setBackground(headerGreen);
+        pnlBillingHeader.setPreferredSize(new Dimension(0, 60));
+        pnlBillingHeader.setBorder(new EmptyBorder(0, 20, 0, 20));
 
-        // --- Main Body ---
-        JPanel pnlBody = new JPanel(new BorderLayout());
-        pnlBody.setOpaque(false);
+        JPanel pnlTitleGroup = new JPanel(new GridLayout(2, 1));
+        pnlTitleGroup.setOpaque(false);
 
+        JLabel lblBillingTitle = new JLabel("Billing system");
+        lblBillingTitle.setForeground(Color.WHITE);
+        lblBillingTitle.setFont(fontTitle);
 
-        // Center Content (Transaction + Numeric Pad)
-        JPanel pnlCenter = new JPanel(new BorderLayout(5, 5));
-        pnlCenter.setOpaque(false);
-        pnlCenter.setBorder(new EmptyBorder(5, 5, 5, 5));
+        lblTime = new JLabel("Loading date/time...");
+        lblTime.setForeground(new Color(200, 230, 200));
+        lblTime.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 
-        // Transaction Table
-        String[] columns = {"Item Name", "Quantity", "U/Price", "Dis%", "Total"};
+        pnlTitleGroup.add(lblBillingTitle);
+        pnlTitleGroup.add(lblTime);
+        pnlBillingHeader.add(pnlTitleGroup, BorderLayout.WEST);
+
+        JPanel pnlHeaderBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        pnlHeaderBtns.setOpaque(false);
+        pnlHeaderBtns.add(createHeaderBtn("View Hold List", Color.WHITE, Color.BLACK));
+        pnlHeaderBtns.add(createHeaderBtn("Retail", buttonGreen, Color.WHITE));
+        pnlHeaderBtns.add(createHeaderBtn("Wholesale", Color.WHITE, Color.BLACK));
+        pnlBillingHeader.add(pnlHeaderBtns, BorderLayout.EAST);
+
+        pnlLeft.add(pnlBillingHeader, BorderLayout.NORTH);
+
+        // 2. Billing Content
+        JPanel pnlBillingContent = new JPanel(new BorderLayout(0, 5));
+        pnlBillingContent.setOpaque(false);
+        pnlBillingContent.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        // Control Row
+        JPanel pnlControls = new JPanel(new GridBagLayout());
+        pnlControls.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 5, 0, 5);
+
+        // Customer Selection
+        gbc.weightx = 0.3;
+        JPanel pnlCustomer = createInputWrapper("Customer - 0786835563");
+        pnlControls.add(pnlCustomer, gbc);
+
+        // User Icon Button
+        gbc.weightx = 0.05;
+        JButton btnUser = new JButton("\uD83D\uDC64");
+        btnUser.setBackground(headerGreen);
+        btnUser.setForeground(Color.WHITE);
+        btnUser.setPreferredSize(new Dimension(50, 45));
+        btnUser.setFocusPainted(false);
+        btnUser.setBorder(null);
+        pnlControls.add(btnUser, gbc);
+
+        // Barcode Input
+        gbc.weightx = 0.4;
+        JPanel pnlBarcode = createInputWrapper("Enter a valid barcode");
+        pnlControls.add(pnlBarcode, gbc);
+
+        // Qty Selector
+        gbc.weightx = 0.2;
+        JPanel pnlQty = new JPanel(new BorderLayout());
+        pnlQty.setBorder(new LineBorder(borderGray));
+        pnlQty.setBackground(Color.WHITE);
+
+        JButton btnMinus = createQtyBtn("-");
+        JButton btnPlus = createQtyBtn("+");
+        JLabel lblQtyVal = new JLabel("1", SwingConstants.CENTER);
+        lblQtyVal.setFont(fontBold14);
+
+        pnlQty.add(btnMinus, BorderLayout.WEST);
+        pnlQty.add(lblQtyVal, BorderLayout.CENTER);
+        pnlQty.add(btnPlus, BorderLayout.EAST);
+        pnlControls.add(pnlQty, gbc);
+
+        pnlBillingContent.add(pnlControls, BorderLayout.NORTH);
+
+        // Table Area
+        String[] columns = { "ITEM NAME", "QTY", "PRICE", "DISCOUNT (%)", "DISCOUNT (RS)", "SUBTOTAL" };
         tableModel = new DefaultTableModel(columns, 0);
         JTable table = new JTable(tableModel);
         table.setRowHeight(40);
         table.setShowGrid(false);
-        table.setIntercellSpacing(new Dimension(0, 0));
-        
-        JTableHeader tableHeader = table.getTableHeader();
-        tableHeader.setBackground(tableHeaderBg);
-        tableHeader.setFont(fontBold12);
-        tableHeader.setPreferredSize(new Dimension(0, 40));
+        table.setFont(fontPlain14);
 
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for(int i=1; i<5; i++) table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        JTableHeader header = table.getTableHeader();
+        header.setBackground(tableHeaderGray);
+        header.setFont(fontBold12);
+        header.setReorderingAllowed(false);
+        header.setPreferredSize(new Dimension(0, 40));
 
-        addSampleCartData();
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(new LineBorder(borderGray));
+        scroll.getViewport().setBackground(Color.WHITE);
+        pnlBillingContent.add(scroll, BorderLayout.CENTER);
 
-        scrollCart = new JScrollPane(table);
-        scrollCart.setBorder(new LineBorder(new Color(230, 230, 235)));
-        scrollCart.getViewport().setBackground(Color.WHITE);
-        pnlCenter.add(scrollCart, BorderLayout.CENTER);
+        // Summary Row
+        JPanel pnlSummary = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 15));
+        pnlSummary.setOpaque(true);
+        pnlSummary.setBackground(new Color(245, 245, 245));
+        pnlSummary.setBorder(new LineBorder(borderGray));
 
-        // Keypad Section
-        pnlKeypadArea = new JPanel(new BorderLayout(5, 5));
-        pnlKeypadArea.setOpaque(false);
-        pnlKeypadArea.setPreferredSize(new Dimension(0, 380));
+        pnlSummary.add(createSummaryLabel("Total Items: 0"));
+        pnlSummary.add(createSummaryLabel("Total Quantity: 0"));
+        pnlSummary.add(createSummaryLabel("Total Amount: Rs. 0.00"));
+        pnlSummary.add(createSummaryLabel("Grand Total: Rs. 0.00"));
 
-        // PLU Input
-        JPanel pnlPLU = new JPanel(new BorderLayout());
-        pnlPLU.setBackground(new Color(100, 100, 105));
-        pnlPLU.setPreferredSize(new Dimension(0, 45));
-        JLabel lblPLUTag = new JLabel(" 1x    PLU ", SwingConstants.LEFT);
-        lblPLUTag.setForeground(Color.WHITE);
-        lblPLUTag.setFont(fontBold14);
-        txtInput = new JTextField();
-        txtInput.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        txtInput.setBorder(null);
-        pnlPLU.add(lblPLUTag, BorderLayout.WEST);
-        pnlPLU.add(txtInput, BorderLayout.CENTER);
-        pnlKeypadArea.add(pnlPLU, BorderLayout.NORTH);
+        pnlBillingContent.add(pnlSummary, BorderLayout.SOUTH);
 
-        // Grid of Numbers and Controls
-        JPanel pnlKeysSub = new JPanel(new BorderLayout(5, 5));
-        pnlKeysSub.setOpaque(false);
+        pnlLeft.add(pnlBillingContent, BorderLayout.CENTER);
 
-        JPanel pnlNumGrid = new JPanel(new GridLayout(4, 4, 3, 3));
-        pnlNumGrid.setOpaque(false);
-        String[] numKeys = {"7", "8", "9", "\u232B", "4", "5", "6", "+", "1", "2", "3", "-", ".", "0", "*", "Back"};
-        for(String sk : numKeys) {
-            JButton b = createKeypadBtn(sk);
-            if(sk.length() == 1 && Character.isDigit(sk.charAt(0))) {
-                b.addActionListener(e -> txtInput.setText(txtInput.getText() + sk));
-            }
-            pnlNumGrid.add(b);
-        }
-        pnlKeysSub.add(pnlNumGrid, BorderLayout.CENTER);
+        // 3. Billing Footer
+        JPanel pnlFooter = new JPanel(new BorderLayout());
+        pnlFooter.setPreferredSize(new Dimension(0, 130));
+        pnlFooter.setBorder(new EmptyBorder(10, 20, 10, 20));
+        pnlFooter.setOpaque(false);
 
-        JPanel pnlSpecialControls = new JPanel(new GridLayout(2, 2, 5, 5));
-        pnlSpecialControls.setOpaque(false);
-        pnlSpecialControls.setPreferredSize(new Dimension(160, 0));
-        pnlSpecialControls.add(createControlBtn("Hold(F6)", "\u23F8"));
-        pnlSpecialControls.add(createControlBtn("Recall", "\u21BA"));
-        pnlSpecialControls.add(createControlBtn("Void", "\uD83D\uDDD1"));
-        pnlSpecialControls.add(createControlBtn("Last Receipt", "\uD83D\uDDA8"));
-        pnlKeysSub.add(pnlSpecialControls, BorderLayout.EAST);
+        JPanel pnlDiscount = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 20));
+        pnlDiscount.setOpaque(false);
+        pnlDiscount.add(new JLabel("Discount"));
+        JTextField txtDiscount = new JTextField("0.00", 15);
+        txtDiscount.setPreferredSize(new Dimension(0, 40));
+        txtDiscount.setBorder(new LineBorder(borderGray));
+        txtDiscount.setHorizontalAlignment(SwingConstants.RIGHT);
+        pnlDiscount.add(txtDiscount);
+        pnlFooter.add(pnlDiscount, BorderLayout.WEST);
 
-        pnlKeypadArea.add(pnlKeysSub, BorderLayout.CENTER);
+        JPanel pnlActionBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+        pnlActionBtns.setOpaque(false);
 
-        JButton btnEnter = new JButton("Enter");
-        btnEnter.setBackground(vibrantGreen);
-        btnEnter.setForeground(Color.WHITE);
-        btnEnter.setFont(new Font("Segoe UI", Font.BOLD, 26));
-        btnEnter.setPreferredSize(new Dimension(0, 70));
-        btnEnter.setFocusPainted(false);
-        btnEnter.setBorder(null);
-        btnEnter.addActionListener(e -> generateReceipt());
-        pnlKeypadArea.add(btnEnter, BorderLayout.SOUTH);
+        JButton btnPay = createActionBtn("\uD83D\uDCBB Pay All (Enter)", headerGreen, 180);
+        JButton btnHold = createActionBtn("\u26A0 Hold All", lightGreen, 160);
+        JButton btnCancel = createActionBtn("\u2298 Cancel", dangerRed, 160);
 
-        pnlCenter.add(pnlKeypadArea, BorderLayout.SOUTH);
-        pnlBody.add(pnlCenter, BorderLayout.CENTER);
+        JPanel pnlBtnHelper = new JPanel(new GridLayout(2, 1, 5, 5));
+        pnlBtnHelper.setOpaque(false);
+        pnlBtnHelper.add(btnHold);
+        pnlBtnHelper.add(btnCancel);
 
-        // Right Panel (Product Grid + Categories)
-        pnlRight = new JPanel(new BorderLayout(10, 10));
-        pnlRight.setOpaque(false);
-        pnlRight.setPreferredSize(new Dimension(550, 0));
-        pnlRight.setBorder(new EmptyBorder(5, 0, 5, 5));
+        pnlActionBtns.add(btnPay);
+        pnlActionBtns.add(pnlBtnHelper);
+        pnlFooter.add(pnlActionBtns, BorderLayout.CENTER);
 
-        // Path / Search Area
-        JPanel pnlRightTop = new JPanel(new BorderLayout());
-        pnlRightTop.setOpaque(false);
-        
-        JPanel pnlPath = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        pnlPath.setOpaque(false);
-        pnlPath.add(new JLabel("\u2302")); // Home icon
-        pnlPath.add(new JLabel(">"));
-        pnlRightTop.add(pnlPath, BorderLayout.NORTH);
+        pnlLeft.add(pnlFooter, BorderLayout.SOUTH);
+        pnlMain.add(pnlLeft, BorderLayout.WEST);
 
-        JPanel pnlSearchArea = new JPanel(new BorderLayout(5, 0));
-        pnlSearchArea.setOpaque(false);
-        JButton btnPrev = createNavBtn("<");
-        btnPrev.setPreferredSize(new Dimension(45, 45));
-        JButton btnNext = createNavBtn(">");
-        btnNext.setPreferredSize(new Dimension(45, 45));
-        JTextField txtSearch = new JTextField(" \uD83D\uDD0D Search products...");
+        // --- Right Panel (Search Area) ---
+        JPanel pnlRightFinal = new JPanel(new BorderLayout(0, 10));
+        pnlRightFinal.setOpaque(true);
+        pnlRightFinal.setBackground(Color.WHITE);
+        pnlRightFinal.setBorder(new LineBorder(borderGray));
+
+        JPanel pnlSearchBack = new JPanel(new BorderLayout());
+        pnlSearchBack.setBorder(new EmptyBorder(10, 10, 10, 10));
+        pnlSearchBack.setOpaque(false);
+
+        JPanel pnlSearchBar = new JPanel(new BorderLayout(5, 0));
+        pnlSearchBar.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(borderGray),
+                new EmptyBorder(5, 10, 5, 10)));
+        pnlSearchBar.setBackground(Color.WHITE);
+
+        JTextField txtSearch = new JTextField("Search for items...");
+        txtSearch.setBorder(null);
         txtSearch.setForeground(Color.GRAY);
-        txtSearch.setFont(fontPlain12);
-        txtSearch.setBorder(new LineBorder(new Color(220, 220, 225)));
-        
-        pnlSearchArea.add(btnPrev, BorderLayout.WEST);
-        pnlSearchArea.add(txtSearch, BorderLayout.CENTER);
-        pnlSearchArea.add(btnNext, BorderLayout.EAST);
-        pnlRightTop.add(pnlSearchArea, BorderLayout.SOUTH);
+        txtSearch.setFont(fontPlain14);
+        pnlSearchBar.add(txtSearch, BorderLayout.CENTER);
 
-        pnlRight.add(pnlRightTop, BorderLayout.NORTH);
+        JPanel pnlSearchIcons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        pnlSearchIcons.setOpaque(false);
+        pnlSearchIcons.add(new JLabel("\uD83D\uDD0D")); // Search icon
+        pnlSearchIcons.add(new JLabel("X")); // Close icon
+        pnlSearchBar.add(pnlSearchIcons, BorderLayout.EAST);
 
-        // Middle: Product Grid
-        JPanel pnlGrids = new JPanel(new BorderLayout(10, 10));
-        pnlGrids.setOpaque(false);
+        pnlSearchBack.add(pnlSearchBar, BorderLayout.NORTH);
+        pnlRightFinal.add(pnlSearchBack, BorderLayout.NORTH);
 
-        pnlProdGrid = new JPanel(new GridLayout(0, 6, 8, 8));
-        pnlProdGrid.setOpaque(false);
-        addSampleProducts(pnlProdGrid);
-        pnlGrids.add(pnlProdGrid, BorderLayout.NORTH);
+        // Placeholder for results
+        JPanel pnlResults = new JPanel();
+        pnlResults.setBackground(Color.WHITE);
+        pnlRightFinal.add(pnlResults, BorderLayout.CENTER);
 
-        // Categories Grid
-        pnlCatGrid = new JPanel(new GridLayout(0, 6, 5, 5));
-        pnlCatGrid.setOpaque(false);
-        String[] categories = {
-            "Snacks", "Dairy Products", "Coffee & Tea Powder", "Health Products", "Bakery Items", "Beauty Products",
-            "Stationery", "Gift Cards", "Favorites", "Fruits", "Spices", "Noodles",
-            "Jam", "Meat", "Beverages", "Sauce", "Frozen Foods", "Top-up phone credit"
-        };
-        for(String cat : categories) {
-            JButton b = new JButton("<html><center>" + cat + "</center></html>");
-            b.setBackground(cat.equals("Favorites") ? Color.DARK_GRAY : categoryBlue);
-            b.setForeground(Color.WHITE);
-            b.setFont(fontSmall);
-            b.setFocusPainted(false);
-            b.setBorder(null);
-            pnlCatGrid.add(b);
-        }
-        pnlGrids.add(pnlCatGrid, BorderLayout.CENTER);
-
-        pnlRight.add(pnlGrids, BorderLayout.CENTER);
-
-        // Bottom Pagination
-        JPanel pnlPagination = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        pnlPagination.setOpaque(false);
-        pnlPagination.add(createPageBtn("\u2302"));
-        for(int i=1; i<=7; i++) pnlPagination.add(createPageBtn(String.valueOf(i)));
-        pnlPagination.add(createPageBtn(">"));
-        pnlRight.add(pnlPagination, BorderLayout.SOUTH);
-
-        pnlBody.add(pnlRight, BorderLayout.EAST);
-
-        add(pnlBody, BorderLayout.CENTER);
-    }
-
-    private JButton createHeaderActionBtn(String text, Color bg) {
-        JButton btn = new JButton(text);
-        btn.setBackground(bg);
-        btn.setForeground(Color.WHITE);
-        btn.setFont(fontBold14);
-        btn.setPreferredSize(new Dimension(180, 40));
-        btn.setFocusPainted(false);
-        btn.setBorder(null);
-        return btn;
-    }
-
-    private JButton createSidebarAction(String text, String icon, boolean active) {
-        JButton btn = new JButton("<html><center><span style='font-size:20px;'>" + icon + "</span><br><br>" + text + "</center></html>");
-        btn.setMaximumSize(new Dimension(120, 90));
-        btn.setPreferredSize(new Dimension(120, 90));
-        btn.setBackground(active ? activeBlueColor : Color.WHITE);
-        btn.setForeground(active ? Color.WHITE : Color.DARK_GRAY);
-        btn.setFocusPainted(false);
-        btn.setBorder(new LineBorder(new Color(235, 235, 240)));
-        btn.setFont(fontSmall);
-        return btn;
-    }
-
-    private JButton createSidebarAction(String text, String icon) {
-        return createSidebarAction(text, icon, false);
-    }
-
-    private JButton createNavBtn(String text) {
-        JButton b = new JButton(text);
-        b.setBackground(new Color(245, 245, 250));
-        b.setForeground(primaryBlue);
-        b.setFont(fontBold14);
-        b.setFocusPainted(false);
-        b.setBorder(new LineBorder(new Color(230, 230, 235)));
-        return b;
-    }
-
-    private JButton createKeypadBtn(String text) {
-        JButton b = new JButton(text);
-        b.setFont(fontBold14);
-        b.setBackground(Color.WHITE);
-        b.setBorder(new LineBorder(new Color(230, 230, 235)));
-        b.setFocusPainted(false);
-        return b;
-    }
-
-    private JButton createControlBtn(String text, String icon) {
-        JButton b = new JButton("<html><center><span style='font-size:18px;'>" + icon + "</span><br>" + text + "</center></html>");
-        b.setBackground(Color.WHITE);
-        b.setForeground(Color.GRAY);
-        b.setFont(fontSmall);
-        b.setBorder(new LineBorder(new Color(230, 230, 235)));
-        b.setFocusPainted(false);
-        return b;
-    }
-
-    private JButton createPageBtn(String text) {
-        JButton b = new JButton(text);
-        b.setPreferredSize(new Dimension(40, 40));
-        b.setBackground(text.equals("1") ? activeBlueColor : Color.WHITE);
-        b.setForeground(text.equals("1") ? Color.WHITE : Color.GRAY);
-        b.setFont(fontBold12);
-        b.setBorder(new LineBorder(new Color(230, 230, 235)));
-        b.setFocusPainted(false);
-        return b;
-    }
-
-    private void addSampleCartData() {
-        tableModel.addRow(new Object[]{"Croissant", "1", "$2.99", "0", "$2.99"});
-        tableModel.addRow(new Object[]{"Strawberry Jam", "2", "$5.00", "0", "$10.00"});
-        tableModel.addRow(new Object[]{"Vodafone Top-up", "1", "$5.00", "0", "$5.00"});
-        tableModel.addRow(new Object[]{"Wheat Braed", "2", "$2.00", "0", "$4.00"});
-    }
-
-    private void addSampleProducts(JPanel grid) {
-        String[] names = {"Croissant", "Choco Chip Cookie", "French Bread", "Wheat Bread", "White Bread", "Eclair"};
-        String[] prices = {"$1.50", "$1.50", "$2.50", "$2.00", "$2.00", "$2.00"};
-        for(int i=0; i<18; i++) {
-            JPanel p = new JPanel(new BorderLayout());
-            p.setBackground(Color.WHITE);
-            p.setBorder(new LineBorder(new Color(235, 235, 240)));
-            
-            JLabel lblImg = new JLabel("IMG", SwingConstants.CENTER);
-            lblImg.setOpaque(true);
-            lblImg.setBackground(new Color(248, 249, 250));
-            lblImg.setPreferredSize(new Dimension(80, 60));
-            p.add(lblImg, BorderLayout.CENTER);
-            
-            JPanel pnlInfo = new JPanel(new GridLayout(2, 1));
-            pnlInfo.setBackground(new Color(50, 50, 50));
-            JLabel lblN = new JLabel(names[i % names.length], SwingConstants.CENTER);
-            lblN.setForeground(Color.WHITE);
-            lblN.setFont(fontSmall);
-            JLabel lblP = new JLabel(prices[i % prices.length], SwingConstants.CENTER);
-            lblP.setForeground(Color.LIGHT_GRAY);
-            lblP.setFont(fontSmall);
-            pnlInfo.add(lblN);
-            pnlInfo.add(lblP);
-            p.add(pnlInfo, BorderLayout.SOUTH);
-            
-            grid.add(p);
-        }
-    }
-
-    private void generateReceipt() {
-        if (tableModel.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(this, "The cart is empty!", "Empty Cart", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        double gross = 0;
-        double disc = 55.00; // Sample static discount for demo
-        
-        StringBuilder itemsHtml = new StringBuilder();
-        for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String name = (String) tableModel.getValueAt(i, 0);
-            String qty = String.valueOf(tableModel.getValueAt(i, 1));
-            String price = String.valueOf(tableModel.getValueAt(i, 2)).replace("$", "");
-            String total = String.valueOf(tableModel.getValueAt(i, 4)).replace("$", "");
-            
-            try { gross += Double.parseDouble(total); } catch(Exception e) {}
-
-            itemsHtml.append("<tr>")
-                     .append("<td align='left' style='padding-top:8px;'>").append(i + 1).append("</td>")
-                     .append("<td align='left' colspan='4' style='padding-top:8px;'>").append(name.toUpperCase()).append("</td>")
-                     .append("</tr>")
-                     .append("<tr>")
-                     .append("<td></td><td></td>")
-                     .append("<td align='right'>").append(price).append("</td>")
-                     .append("<td align='right'>").append(qty).append(".0</td>")
-                     .append("<td align='right'>").append(total).append("</td>")
-                     .append("</tr>");
-        }
-
-        double net = Math.max(0, gross - disc);
-        String dateStr = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss").format(new Date());
-
-        String html = "<html><body style='font-family:Segoe UI; padding:10px;'>" +
-                "<div style='text-align:center; width:280px;'>" +
-                "<h1 style='color:#4CAF50; margin:0;'>POS BILL</h1>" +
-                "<p style='margin:5px 0; font-size:11px;'>No.248, Pallegama , Embilpitiya.<br>" +
-                "0772 062 970 / Store Code: SREP</p>" +
-                "<p style='font-size:10px; margin:5px 0;'>" + dateStr + " C:66001 R:26661</p>" +
-                "</div>" +
-                "<hr style='border: 0; border-top: 1px dashed #ccc; width:280px; text-align:left;'>" +
-                "<table width='280' style='font-size:11px; border-collapse:collapse;'>" +
-                "<tr>" +
-                "<th align='left' width='10%'>Ln</th>" +
-                "<th align='left' width='40%'>Item</th>" +
-                "<th align='right' width='18%'>Price</th>" +
-                "<th align='right' width='12%'>Qty</th>" +
-                "<th align='right' width='20%'>Amount</th>" +
-                "</tr>" +
-                "<tr><td colspan='5' style='border-top:1px solid #000;'></td></tr>" +
-                itemsHtml.toString() +
-                "</table>" +
-                "<hr style='border: 0; border-top: 1px solid #000; width:280px; text-align:left;'>" +
-                "<table width='280' style='font-size:12px; font-weight:bold;'>" +
-                "<tr><td>Gross Amount</td><td align='right'>" + String.format("%.2f", gross) + "</td></tr>" +
-                "<tr><td>Promotion Discount</td><td align='right'>" + String.format("%.2f", disc) + "</td></tr>" +
-                "<tr><td style='font-size:14px;'>Net Amount</td><td align='right' style='font-size:14px;'>" + String.format("%.2f", net) + "</td></tr>" +
-                "<tr><td>Cash</td><td align='right'>" + String.format("%.2f", gross) + "</td></tr>" +
-                "</table>" +
-                "<hr style='border: 0; border-top: 1px dashed #ccc; width:280px; text-align:left;'>" +
-                "<div style='text-align:center; font-size:10px; margin-top:10px; width:280px;'>" +
-                "THANK YOU - COME AGAIN!" +
-                "</div>" +
-                "</body></html>";
-
-        JEditorPane area = new JEditorPane("text/html", html);
-        area.setEditable(false);
-        area.setBackground(Color.WHITE);
-        
-        JScrollPane sp = new JScrollPane(area);
-        sp.setPreferredSize(new Dimension(380, 550));
-        sp.setBorder(new LineBorder(new Color(220, 220, 220)));
-
-        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Sales Receipt", true);
-        dialog.setLayout(new BorderLayout(10, 10));
-        dialog.add(sp, BorderLayout.CENTER);
-
-        JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        pnlButtons.setBackground(Color.WHITE);
-        
-        JButton btnPrint = new JButton("Print Receipt");
-        styleDialogButton(btnPrint, primaryBlue);
-        
-        JButton btnClose = new JButton("Close");
-        styleDialogButton(btnClose, Color.GRAY);
-
-        pnlButtons.add(btnPrint);
-        pnlButtons.add(btnClose);
-        dialog.add(pnlButtons, BorderLayout.SOUTH);
-
-        btnClose.addActionListener(e -> dialog.dispose());
-        btnPrint.addActionListener(e -> {
-            try {
-                area.print();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, "Printing failed: " + ex.getMessage());
-            }
-        });
-
-        dialog.pack();
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
-        
-        tableModel.setRowCount(0);
-        txtInput.setText("");
-    }
-
-    private void styleDialogButton(JButton btn, Color bg) {
-        btn.setPreferredSize(new Dimension(120, 35));
-        btn.setBackground(bg);
-        btn.setForeground(Color.WHITE);
-        btn.setFont(fontBold12);
-        btn.setFocusPainted(false);
-        btn.setBorder(null);
+        pnlMain.add(pnlRightFinal, BorderLayout.CENTER);
+        add(pnlMain, BorderLayout.CENTER);
     }
 
     private void setupResponsiveness() {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                int width = getWidth();
-                int height = getHeight();
-                
-                // Threshold-based font scaling
-                float scale = 1.0f;
-                if (width < 800) scale = 0.85f;
-                else if (width < 1200) scale = 0.95f;
-                
-                updateFontsRecursive(POSPanel.this, scale);
-
-                // Adjust Right Panel Proportional Width
-                if (width > 800) {
-                    int rightW = (int)(width * 0.45);
-                    if (rightW > 700) rightW = 700;
-                    pnlRight.setPreferredSize(new Dimension(rightW, 0));
-                }
-
-                // Adjust Keypad Height
-                int keypadH = (int)(height * 0.45);
-                if (keypadH < 320) keypadH = 320;
-                if (keypadH > 500) keypadH = 500;
-                pnlKeypadArea.setPreferredSize(new Dimension(0, keypadH));
-
-                // Grid Columns
-                int rWidth = pnlRight.getPreferredSize().width;
-                ((GridLayout) pnlProdGrid.getLayout()).setColumns(Math.max(3, rWidth / 100));
-                ((GridLayout) pnlCatGrid.getLayout()).setColumns(Math.max(3, rWidth / 110));
-
                 revalidate();
                 repaint();
             }
         });
-    }
-
-    private void updateFontsRecursive(Container container, float scale) {
-        for (Component c : container.getComponents()) {
-            if (c instanceof JComponent) {
-                JComponent jc = (JComponent) c;
-                Font current = jc.getFont();
-                if (current != null) {
-                    Font original = (Font) jc.getClientProperty("originalFont");
-                    if (original == null) {
-                        jc.putClientProperty("originalFont", current);
-                        original = current;
-                    }
-                    jc.setFont(original.deriveFont(original.getSize2D() * scale));
-                }
-            }
-            if (c instanceof Container) {
-                updateFontsRecursive((Container) c, scale);
-            }
-        }
     }
 
     private void startTimer() {
@@ -544,5 +256,64 @@ public class POSPanel extends JPanel {
             lblTime.setText(sdf.format(new Date()));
         });
         timer.start();
+    }
+
+    // --- Helper Methods for Redesign ---
+
+    private JButton createHeaderBtn(String text, Color bg, Color fg) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setFont(fontBold12);
+        btn.setFocusPainted(false);
+        btn.setBorder(new LineBorder(borderGray));
+        btn.setPreferredSize(new Dimension(120, 35));
+        return btn;
+    }
+
+    private JPanel createInputWrapper(String placeholder) {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setBackground(fieldBg);
+        p.setBorder(new LineBorder(borderGray));
+        p.setPreferredSize(new Dimension(0, 45));
+
+        JTextField txt = new JTextField(placeholder);
+        txt.setBorder(new EmptyBorder(0, 10, 0, 10));
+        txt.setOpaque(false);
+        txt.setForeground(Color.GRAY);
+        txt.setFont(fontPlain14);
+        p.add(txt, BorderLayout.CENTER);
+        return p;
+    }
+
+    private JButton createQtyBtn(String text) {
+        JButton b = new JButton(text);
+        b.setFont(fontBold14);
+        b.setBackground(new Color(245, 245, 250));
+        b.setFocusPainted(false);
+        b.setBorder(null);
+        b.setPreferredSize(new Dimension(45, 45));
+        return b;
+    }
+
+    private JLabel createSummaryLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(fontBold14);
+        lbl.setForeground(new Color(50, 50, 50));
+        return lbl;
+    }
+
+    private JButton createActionBtn(String text, Color bg, int width) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(fontBold14);
+        btn.setFocusPainted(false);
+        btn.setBorder(null);
+        btn.setPreferredSize(new Dimension(width, 45));
+        if (text.contains("Pay All")) {
+            btn.setPreferredSize(new Dimension(width, 95));
+        }
+        return btn;
     }
 }

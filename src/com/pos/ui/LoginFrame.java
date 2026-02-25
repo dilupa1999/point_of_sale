@@ -23,7 +23,7 @@ public class LoginFrame extends JFrame {
         setUndecorated(true); // Modern look
         setSize(1000, 600);
         setLocationRelativeTo(null);
-        
+
         initComponents();
     }
 
@@ -36,7 +36,7 @@ public class LoginFrame extends JFrame {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(bgColor);
                 g2.fillRect(0, 0, getWidth(), getHeight());
-                
+
                 // Draw Large Circular Logo Area
                 g2.setColor(Color.WHITE);
                 int circleSize = 350;
@@ -81,7 +81,7 @@ public class LoginFrame extends JFrame {
         card.add(txtPassword);
 
         // Eye Icon Placeholder (Optional implementation improvement later)
-        
+
         // Remember Me
         JCheckBox chkRemember = new JCheckBox("Remember Me");
         chkRemember.setFont(labelFont);
@@ -118,11 +118,56 @@ public class LoginFrame extends JFrame {
         btnLogin.setBounds(125, 300, 100, 100);
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogin.addActionListener(e -> {
-            // Simplified login logic for now
-            this.dispose();
-            new MainFrame().setVisible(true);
+            String email = txtEmail.getText().trim();
+            String password = String.valueOf(txtPassword.getPassword()).trim();
+
+            if (email.isEmpty() || email.equals("Enter your email") || password.isEmpty()
+                    || password.equals("Enter your password")) {
+                JOptionPane.showMessageDialog(this, "Please enter both email and password.", "Input Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Check Internet Connection
+            if (!com.pos.service.NetworkService.isInternetAvailable()) {
+                int choice = JOptionPane.showConfirmDialog(this,
+                        "No internet connection detected. Some features might not work correctly.\nDo you want to proceed anyway?",
+                        "Connectivity Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+                if (choice == JOptionPane.NO_OPTION) {
+                    return;
+                }
+            }
+
+            try {
+                String response = com.pos.service.AuthService.login(email, password);
+
+                if (response.contains("\"success\":true") || response.contains("\"success\": true")) {
+                    this.dispose();
+                    new MainFrame().setVisible(true);
+                } else {
+                    String message = "Invalid email or password.";
+                    if (response.contains("\"message\":")) {
+                        // Very simple extraction of the message field
+                        int msgIndex = response.indexOf("\"message\":");
+                        int start = response.indexOf("\"", msgIndex + 10) + 1;
+                        int end = response.indexOf("\"", start);
+                        if (start > 0 && end > start) {
+                            message = response.substring(start, end);
+                        }
+                    }
+                    JOptionPane.showMessageDialog(this, message, "Login Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "API Connection error: " + ex.getMessage(), "System Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         });
         card.add(btnLogin);
+
+        // Enable Enter Key to trigger login
+        getRootPane().setDefaultButton(btnLogin);
 
         // Footer Text
         JLabel lblFooter = new JLabel("Powered by Silicon Radon Networks (Pvt) Ltd.", SwingConstants.CENTER);
@@ -130,7 +175,7 @@ public class LoginFrame extends JFrame {
         lblFooter.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         lblFooter.setBounds(550, 530, 350, 30);
         mainPanel.add(lblFooter);
-        
+
         // Close Button (Top Right)
         JButton btnClose = new JButton("X");
         btnClose.setFont(new Font("Segoe UI", Font.BOLD, 18));
@@ -148,12 +193,11 @@ public class LoginFrame extends JFrame {
         JTextField field = new JTextField();
         field.setFont(inputFont);
         field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(inputBorder, 1),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
+                BorderFactory.createLineBorder(inputBorder, 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
         field.setText(placeholder);
         field.setForeground(Color.GRAY);
-        
+
         field.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -162,6 +206,7 @@ public class LoginFrame extends JFrame {
                     field.setForeground(Color.BLACK);
                 }
             }
+
             @Override
             public void focusLost(FocusEvent e) {
                 if (field.getText().isEmpty()) {
@@ -177,9 +222,8 @@ public class LoginFrame extends JFrame {
         JPasswordField field = new JPasswordField();
         field.setFont(inputFont);
         field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(inputBorder, 1),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
+                BorderFactory.createLineBorder(inputBorder, 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
         field.setEchoChar((char) 0);
         field.setText(placeholder);
         field.setForeground(Color.GRAY);
@@ -193,6 +237,7 @@ public class LoginFrame extends JFrame {
                     field.setEchoChar('\u2022');
                 }
             }
+
             @Override
             public void focusLost(FocusEvent e) {
                 if (field.getPassword().length == 0) {
