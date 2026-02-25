@@ -23,6 +23,7 @@ public class MainFrame extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         
         initComponents();
+        setupResponsiveness();
     }
 
     private void initComponents() {
@@ -139,6 +140,42 @@ public class MainFrame extends JFrame {
 
     public void showPanel(String name) {
         cardLayout.show(mainContent, name);
+    }
+
+    private void setupResponsiveness() {
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int width = getWidth();
+                float scale = 1.0f;
+                if (width < 1000) scale = 0.85f;
+                else if (width < 1300) scale = 0.95f;
+                
+                updateFontsRecursive(MainFrame.this, scale);
+                revalidate();
+                repaint();
+            }
+        });
+    }
+
+    private void updateFontsRecursive(Container container, float scale) {
+        for (Component c : container.getComponents()) {
+            if (c instanceof JComponent) {
+                JComponent jc = (JComponent) c;
+                Font current = jc.getFont();
+                if (current != null) {
+                    Font original = (Font) jc.getClientProperty("originalFont");
+                    if (original == null) {
+                        jc.putClientProperty("originalFont", current);
+                        original = current;
+                    }
+                    jc.setFont(original.deriveFont(original.getSize2D() * scale));
+                }
+            }
+            if (c instanceof Container) {
+                updateFontsRecursive((Container) c, scale);
+            }
+        }
     }
 
     private JButton createSidebarButton(String text, String iconType, Color bg, Color fg) {

@@ -370,49 +370,73 @@ public class POSPanel extends JPanel {
             return;
         }
 
-        StringBuilder receipt = new StringBuilder();
-        receipt.append("--------------------------------------------\n");
-        receipt.append("            RETAIL SUPERMARKET            \n");
-        receipt.append("--------------------------------------------\n");
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        receipt.append("Date: ").append(sdf.format(new Date())).append("\n");
-        receipt.append("--------------------------------------------\n");
-        receipt.append(String.format("%-18s %3s %5s %9s\n", "Item", "Qty", "Disc", "Total"));
-        receipt.append("--------------------------------------------\n");
-
-        double grandTotal = 0;
+        double gross = 0;
+        double disc = 55.00; // Sample static discount for demo
+        
+        StringBuilder itemsHtml = new StringBuilder();
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String item = (String) tableModel.getValueAt(i, 0);
+            String name = (String) tableModel.getValueAt(i, 0);
             String qty = String.valueOf(tableModel.getValueAt(i, 1));
-            String discount = String.valueOf(tableModel.getValueAt(i, 3));
-            String totalStr = (String) tableModel.getValueAt(i, 4);
+            String price = String.valueOf(tableModel.getValueAt(i, 2)).replace("$", "");
+            String total = String.valueOf(tableModel.getValueAt(i, 4)).replace("$", "");
             
-            receipt.append(String.format("%-18s %3s %5s %9s\n", 
-                item.length() > 18 ? item.substring(0, 15) + "..." : item, 
-                qty, discount + "%", totalStr));
-            
-            try {
-                grandTotal += Double.parseDouble(totalStr.replace("$", ""));
-            } catch (Exception ex) {}
+            try { gross += Double.parseDouble(total); } catch(Exception e) {}
+
+            itemsHtml.append("<tr>")
+                     .append("<td align='left' style='padding-top:8px;'>").append(i + 1).append("</td>")
+                     .append("<td align='left' colspan='4' style='padding-top:8px;'>").append(name.toUpperCase()).append("</td>")
+                     .append("</tr>")
+                     .append("<tr>")
+                     .append("<td></td><td></td>")
+                     .append("<td align='right'>").append(price).append("</td>")
+                     .append("<td align='right'>").append(qty).append(".0</td>")
+                     .append("<td align='right'>").append(total).append("</td>")
+                     .append("</tr>");
         }
 
-        receipt.append("--------------------------------------------\n");
-        receipt.append(String.format("GRAND TOTAL:                  $%.2f\n", grandTotal));
-        receipt.append("--------------------------------------------\n");
-        receipt.append("            THANK YOU - COME AGAIN!           \n");
-        receipt.append("--------------------------------------------\n");
+        double net = Math.max(0, gross - disc);
+        String dateStr = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss").format(new Date());
 
-        JTextArea area = new JTextArea(receipt.toString());
-        area.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        String html = "<html><body style='font-family:Segoe UI; padding:10px;'>" +
+                "<div style='text-align:center; width:280px;'>" +
+                "<h1 style='color:#4CAF50; margin:0;'>POS BILL</h1>" +
+                "<p style='margin:5px 0; font-size:11px;'>No.248, Pallegama , Embilpitiya.<br>" +
+                "0772 062 970 / Store Code: SREP</p>" +
+                "<p style='font-size:10px; margin:5px 0;'>" + dateStr + " C:66001 R:26661</p>" +
+                "</div>" +
+                "<hr style='border: 0; border-top: 1px dashed #ccc; width:280px; text-align:left;'>" +
+                "<table width='280' style='font-size:11px; border-collapse:collapse;'>" +
+                "<tr>" +
+                "<th align='left' width='10%'>Ln</th>" +
+                "<th align='left' width='40%'>Item</th>" +
+                "<th align='right' width='18%'>Price</th>" +
+                "<th align='right' width='12%'>Qty</th>" +
+                "<th align='right' width='20%'>Amount</th>" +
+                "</tr>" +
+                "<tr><td colspan='5' style='border-top:1px solid #000;'></td></tr>" +
+                itemsHtml.toString() +
+                "</table>" +
+                "<hr style='border: 0; border-top: 1px solid #000; width:280px; text-align:left;'>" +
+                "<table width='280' style='font-size:12px; font-weight:bold;'>" +
+                "<tr><td>Gross Amount</td><td align='right'>" + String.format("%.2f", gross) + "</td></tr>" +
+                "<tr><td>Promotion Discount</td><td align='right'>" + String.format("%.2f", disc) + "</td></tr>" +
+                "<tr><td style='font-size:14px;'>Net Amount</td><td align='right' style='font-size:14px;'>" + String.format("%.2f", net) + "</td></tr>" +
+                "<tr><td>Cash</td><td align='right'>" + String.format("%.2f", gross) + "</td></tr>" +
+                "</table>" +
+                "<hr style='border: 0; border-top: 1px dashed #ccc; width:280px; text-align:left;'>" +
+                "<div style='text-align:center; font-size:10px; margin-top:10px; width:280px;'>" +
+                "THANK YOU - COME AGAIN!" +
+                "</div>" +
+                "</body></html>";
+
+        JEditorPane area = new JEditorPane("text/html", html);
         area.setEditable(false);
-        area.setBackground(new Color(255, 255, 248));
-        area.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        area.setBackground(Color.WHITE);
         
         JScrollPane sp = new JScrollPane(area);
-        sp.setPreferredSize(new Dimension(380, 500));
+        sp.setPreferredSize(new Dimension(380, 550));
         sp.setBorder(new LineBorder(new Color(220, 220, 220)));
 
-        // Custom Dialog with Print Button
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Sales Receipt", true);
         dialog.setLayout(new BorderLayout(10, 10));
         dialog.add(sp, BorderLayout.CENTER);
@@ -443,7 +467,6 @@ public class POSPanel extends JPanel {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
         
-        // Clear cart after completing transaction (once dialog is closed)
         tableModel.setRowCount(0);
         txtInput.setText("");
     }
@@ -464,40 +487,55 @@ public class POSPanel extends JPanel {
                 int width = getWidth();
                 int height = getHeight();
                 
-                // Adjust Right Panel Width based on aspect ratio
-                double aspectRatio = (double) width / height;
+                // Threshold-based font scaling
+                float scale = 1.0f;
+                if (width < 800) scale = 0.85f;
+                else if (width < 1200) scale = 0.95f;
                 
-                if (width > 1600) {
-                    pnlRight.setPreferredSize(new Dimension(800, 0));
-                } else if (width > 1200) {
-                    pnlRight.setPreferredSize(new Dimension(600, 0));
-                } else if (aspectRatio < 1.4) { // Square or near-square (like 15x15 inch terminals)
-                    pnlRight.setPreferredSize(new Dimension((int)(width * 0.45), 0));
-                } else if (width > 900) {
-                    pnlRight.setPreferredSize(new Dimension(450, 0));
-                } else {
-                    pnlRight.setPreferredSize(new Dimension(width / 2, 0));
+                updateFontsRecursive(POSPanel.this, scale);
+
+                // Adjust Right Panel Proportional Width
+                if (width > 800) {
+                    int rightW = (int)(width * 0.45);
+                    if (rightW > 700) rightW = 700;
+                    pnlRight.setPreferredSize(new Dimension(rightW, 0));
                 }
 
-                // Adjust Keypad Height based on total height
-                int keypadHeight = (int)(height * 0.42);
-                if (keypadHeight < 300) keypadHeight = 300;
-                if (keypadHeight > 450) keypadHeight = 450;
-                pnlKeypadArea.setPreferredSize(new Dimension(0, keypadHeight));
+                // Adjust Keypad Height
+                int keypadH = (int)(height * 0.45);
+                if (keypadH < 320) keypadH = 320;
+                if (keypadH > 500) keypadH = 500;
+                pnlKeypadArea.setPreferredSize(new Dimension(0, keypadH));
 
-                // Adjust Product Grid Columns
-                int rightWidth = pnlRight.getPreferredSize().width;
-                int prodCols = Math.max(2, rightWidth / 95);
-                ((GridLayout) pnlProdGrid.getLayout()).setColumns(prodCols);
-
-                // Adjust Category Grid Columns
-                int catCols = Math.max(2, rightWidth / 110);
-                ((GridLayout) pnlCatGrid.getLayout()).setColumns(catCols);
+                // Grid Columns
+                int rWidth = pnlRight.getPreferredSize().width;
+                ((GridLayout) pnlProdGrid.getLayout()).setColumns(Math.max(3, rWidth / 100));
+                ((GridLayout) pnlCatGrid.getLayout()).setColumns(Math.max(3, rWidth / 110));
 
                 revalidate();
                 repaint();
             }
         });
+    }
+
+    private void updateFontsRecursive(Container container, float scale) {
+        for (Component c : container.getComponents()) {
+            if (c instanceof JComponent) {
+                JComponent jc = (JComponent) c;
+                Font current = jc.getFont();
+                if (current != null) {
+                    Font original = (Font) jc.getClientProperty("originalFont");
+                    if (original == null) {
+                        jc.putClientProperty("originalFont", current);
+                        original = current;
+                    }
+                    jc.setFont(original.deriveFont(original.getSize2D() * scale));
+                }
+            }
+            if (c instanceof Container) {
+                updateFontsRecursive((Container) c, scale);
+            }
+        }
     }
 
     private void startTimer() {

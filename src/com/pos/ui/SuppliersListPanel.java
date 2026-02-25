@@ -165,6 +165,8 @@ public class SuppliersListPanel extends JPanel {
         });
 
         table.getColumnModel().getColumn(6).setCellRenderer(new ManageRenderer());
+        table.getColumnModel().getColumn(6).setPreferredWidth(180);
+        table.getColumnModel().getColumn(6).setMinWidth(170);
         addSampleData();
 
         JScrollPane scrollPane = new JScrollPane(table);
@@ -242,8 +244,9 @@ public class SuppliersListPanel extends JPanel {
     class ManageRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 8));
+            JPanel p = new JPanel(new GridBagLayout());
             p.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
+            p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 235)));
 
             JButton btnEdit = new JButton("Edit");
             styleManageButton(btnEdit, Color.WHITE, Color.DARK_GRAY);
@@ -251,9 +254,11 @@ public class SuppliersListPanel extends JPanel {
             JButton btnDeactivate = new JButton("Deactivate");
             styleManageButton(btnDeactivate, disableRed, Color.WHITE);
 
-            p.add(btnEdit);
-            p.add(btnDeactivate);
-            p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 235)));
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(0, 5, 0, 5);
+            p.add(btnEdit, gbc);
+            p.add(btnDeactivate, gbc);
+            
             return p;
         }
 
