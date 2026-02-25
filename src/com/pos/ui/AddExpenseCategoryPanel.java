@@ -8,9 +8,9 @@ import java.awt.*;
 public class AddExpenseCategoryPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color themeBlue = new Color(30, 136, 229);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color cancelRed = new Color(211, 47, 47);
-    private final Color resetGreen = new Color(139, 195, 74);
     private final Color fieldBg = new Color(245, 245, 250);
     private final Font fontBold14 = new Font("Segoe UI", Font.BOLD, 14);
 
@@ -107,8 +107,8 @@ public class AddExpenseCategoryPanel extends JPanel {
 
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         pnlButtons.setOpaque(false);
-        pnlButtons.add(createActionButton("Add", resetGreen)); 
-        pnlButtons.add(createActionButton("Reset", resetGreen));
+        pnlButtons.add(createActionButton("Add", actionBlue)); 
+        pnlButtons.add(createActionButton("Reset", tableHeaderBlue));
         pnlButtons.add(createActionButton("Cancel", cancelRed));
         pnlForm.add(pnlButtons, gbc);
 

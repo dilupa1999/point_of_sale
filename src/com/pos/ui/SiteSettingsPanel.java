@@ -10,11 +10,11 @@ import java.awt.event.ActionListener;
 public class SiteSettingsPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color headerBlue = new Color(30, 136, 229);
-    private final Color fieldBg = new Color(245, 245, 250);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color cancelRed = new Color(211, 47, 47);
-    private final Color saveGreen = new Color(100, 175, 80);
     private final Color resetBlack = new Color(33, 33, 33);
+    private final Color fieldBg = new Color(245, 245, 250);
     private final Font fontBold14 = new Font("Segoe UI", Font.BOLD, 14);
     private final Font fontPlain13 = new Font("Segoe UI", Font.PLAIN, 13);
 
@@ -148,8 +148,8 @@ public class SiteSettingsPanel extends JPanel {
         gbc.anchor = GridBagConstraints.CENTER;
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         pnlButtons.setOpaque(false);
-        pnlButtons.add(createActionButton("Save", saveGreen));
-        pnlButtons.add(createActionButton("Reset System", resetBlack));
+        pnlButtons.add(createActionButton("Save", actionBlue));
+        pnlButtons.add(createActionButton("Reset System", tableHeaderBlue));
         pnlButtons.add(createActionButton("Cancel", cancelRed));
         pnlForm.add(pnlButtons, gbc);
 

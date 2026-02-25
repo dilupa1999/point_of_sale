@@ -12,9 +12,9 @@ public class CustomerListPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color filterBlue = new Color(13, 71, 161);
-    private final Color tableHeaderBlue = new Color(100, 175, 80).darker(); // I'll use a blue-ish version or keep it consistent with others
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color themeBlue = new Color(13, 71, 161);
-    private final Color actionGreen = new Color(139, 195, 74);
+    private final Color actionBlue = new Color(25, 118, 210);
     private final Color disableRed = new Color(211, 47, 47);
 
     private JTable table;
@@ -151,7 +151,7 @@ public class CustomerListPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(new Color(30, 136, 229)); // Theme Blue
+                lbl.setBackground(tableHeaderBlue);
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);

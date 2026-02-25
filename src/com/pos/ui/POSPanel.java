@@ -16,10 +16,10 @@ public class POSPanel extends JPanel {
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color darkBlue = new Color(0, 51, 102);
     private final Color activeBlueColor = new Color(1, 87, 155);
-    private final Color vibrantGreen = new Color(0, 200, 83);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color sidebarBg = new Color(255, 255, 255);
     private final Color lightGrayBg = new Color(245, 245, 250);
-    private final Color tableHeaderBg = new Color(220, 225, 230);
     private final Color categoryBlue = new Color(21, 101, 192);
     
     private final Font fontTitle = new Font("Segoe UI", Font.BOLD, 22);
@@ -37,6 +37,8 @@ public class POSPanel extends JPanel {
     private JPanel pnlCatGrid;
     private JScrollPane scrollCart;
     private JPanel pnlKeypadArea;
+    private JPanel pnlHeader;
+    private JButton btnMode;
 
     public POSPanel() {
         setLayout(new BorderLayout());
@@ -48,7 +50,7 @@ public class POSPanel extends JPanel {
 
     private void initComponents() {
         // --- Top Header ---
-        JPanel pnlHeader = new JPanel(new BorderLayout());
+        pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setBackground(Color.WHITE);
         pnlHeader.setPreferredSize(new Dimension(0, 80));
         pnlHeader.setBorder(new EmptyBorder(5, 20, 5, 20));
@@ -66,14 +68,14 @@ public class POSPanel extends JPanel {
         JPanel pnlHeaderActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
         pnlHeaderActions.setOpaque(false);
         
-        JButton btnMode = createHeaderActionBtn("Walk In-Take Away", darkBlue);
+        btnMode = createHeaderActionBtn("Walk In-Take Away", darkBlue);
         
         JPanel pnlPrinter = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         pnlPrinter.setOpaque(false);
         pnlPrinter.add(new JLabel("Printer"));
         JLabel lblOn = new JLabel(" ON ");
         lblOn.setOpaque(true);
-        lblOn.setBackground(vibrantGreen);
+        lblOn.setBackground(actionBlue);
         lblOn.setForeground(Color.WHITE);
         lblOn.setFont(fontBold12);
         lblOn.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
@@ -109,7 +111,8 @@ public class POSPanel extends JPanel {
         table.setIntercellSpacing(new Dimension(0, 0));
         
         JTableHeader tableHeader = table.getTableHeader();
-        tableHeader.setBackground(tableHeaderBg);
+        tableHeader.setBackground(tableHeaderBlue);
+        tableHeader.setForeground(Color.WHITE);
         tableHeader.setFont(fontBold12);
         tableHeader.setPreferredSize(new Dimension(0, 40));
 
@@ -171,7 +174,7 @@ public class POSPanel extends JPanel {
         pnlKeypadArea.add(pnlKeysSub, BorderLayout.CENTER);
 
         JButton btnEnter = new JButton("Enter");
-        btnEnter.setBackground(vibrantGreen);
+        btnEnter.setBackground(actionBlue);
         btnEnter.setForeground(Color.WHITE);
         btnEnter.setFont(new Font("Segoe UI", Font.BOLD, 26));
         btnEnter.setPreferredSize(new Dimension(0, 70));
@@ -399,7 +402,7 @@ public class POSPanel extends JPanel {
 
         String html = "<html><body style='font-family:Segoe UI; padding:10px;'>" +
                 "<div style='text-align:center; width:280px;'>" +
-                "<h1 style='color:#4CAF50; margin:0;'>POS BILL</h1>" +
+                "<h1 style='color:#0D47A1; margin:0;'>POS BILL</h1>" +
                 "<p style='margin:5px 0; font-size:11px;'>No.248, Pallegama , Embilpitiya.<br>" +
                 "0772 062 970 / Store Code: SREP</p>" +
                 "<p style='font-size:10px; margin:5px 0;'>" + dateStr + " C:66001 R:26661</p>" +
@@ -434,7 +437,8 @@ public class POSPanel extends JPanel {
         area.setBackground(Color.WHITE);
         
         JScrollPane sp = new JScrollPane(area);
-        sp.setPreferredSize(new Dimension(380, 550));
+        int dialogH = Math.min(550, (int)(getHeight() * 0.85));
+        sp.setPreferredSize(new Dimension(380, dialogH));
         sp.setBorder(new LineBorder(new Color(220, 220, 220)));
 
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Sales Receipt", true);
@@ -489,28 +493,45 @@ public class POSPanel extends JPanel {
                 
                 // Threshold-based font scaling
                 float scale = 1.0f;
-                if (width < 800) scale = 0.85f;
-                else if (width < 1200) scale = 0.95f;
+                if (width < 850) scale = 0.75f;
+                else if (width < 1100) scale = 0.85f;
+                else if (width < 1300) scale = 0.95f;
                 
                 updateFontsRecursive(POSPanel.this, scale);
 
-                // Adjust Right Panel Proportional Width
-                if (width > 800) {
-                    int rightW = (int)(width * 0.45);
-                    if (rightW > 700) rightW = 700;
-                    pnlRight.setPreferredSize(new Dimension(rightW, 0));
+                // Adjust Header height and padding based on window height
+                if (height < 700) {
+                    pnlHeader.setPreferredSize(new Dimension(0, 60));
+                    pnlHeader.setBorder(new EmptyBorder(2, 10, 2, 10));
+                    btnMode.setPreferredSize(new Dimension(130, 35));
+                } else {
+                    pnlHeader.setPreferredSize(new Dimension(0, 80));
+                    pnlHeader.setBorder(new EmptyBorder(5, 20, 5, 20));
+                    btnMode.setPreferredSize(new Dimension(180, 40));
                 }
 
-                // Adjust Keypad Height
-                int keypadH = (int)(height * 0.45);
-                if (keypadH < 320) keypadH = 320;
-                if (keypadH > 500) keypadH = 500;
+                // Adjust Right Panel Proportional Width
+                int rightW;
+                if (width < 900) {
+                    rightW = (int)(width * 0.55); // More space for products on smaller widths
+                } else {
+                    rightW = (int)(width * 0.45);
+                }
+                // Cap width for useability
+                if (rightW < 320) rightW = 320;
+                if (rightW > 700) rightW = 700;
+                pnlRight.setPreferredSize(new Dimension(rightW, 0));
+
+                // Adjust Keypad Height - scale with window height
+                int keypadH = (int)(height * 0.42);
+                if (keypadH < 260) keypadH = 260; 
+                if (keypadH > 450) keypadH = 450;
                 pnlKeypadArea.setPreferredSize(new Dimension(0, keypadH));
 
-                // Grid Columns
+                // Grid Columns - optimize for available width in pnlRight
                 int rWidth = pnlRight.getPreferredSize().width;
-                ((GridLayout) pnlProdGrid.getLayout()).setColumns(Math.max(3, rWidth / 100));
-                ((GridLayout) pnlCatGrid.getLayout()).setColumns(Math.max(3, rWidth / 110));
+                ((GridLayout) pnlProdGrid.getLayout()).setColumns(Math.max(2, rWidth / 90));
+                ((GridLayout) pnlCatGrid.getLayout()).setColumns(Math.max(2, rWidth / 95));
 
                 revalidate();
                 repaint();
@@ -529,7 +550,9 @@ public class POSPanel extends JPanel {
                         jc.putClientProperty("originalFont", current);
                         original = current;
                     }
-                    jc.setFont(original.deriveFont(original.getSize2D() * scale));
+                    float newSize = original.getSize2D() * scale;
+                    if (newSize < 9.0f) newSize = 9.0f; // Minimum readable size
+                    jc.setFont(original.deriveFont(newSize));
                 }
             }
             if (c instanceof Container) {

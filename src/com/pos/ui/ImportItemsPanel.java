@@ -8,8 +8,8 @@ import java.awt.*;
 public class ImportItemsPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color vibrantGreen = new Color(0, 200, 83);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color outOfStockRed = new Color(211, 47, 47);
     private final Color templateBlue = new Color(33, 150, 243);
     private final Color infoBg = new Color(240, 248, 255);
@@ -134,7 +134,7 @@ public class ImportItemsPanel extends JPanel {
         gbc.insets = new Insets(15, 100, 0, 0); // Align after the icon
         JPanel pnlActions = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         pnlActions.setOpaque(false);
-        pnlActions.add(createActionButton("Import", tableHeaderGreen));
+        pnlActions.add(createActionButton("Import", actionBlue));
         pnlActions.add(createActionButton("Cancel", outOfStockRed));
         pnlBody.add(pnlActions, gbc);
 
@@ -168,7 +168,7 @@ public class ImportItemsPanel extends JPanel {
         gbc.insets = new Insets(40, 0, 0, 0);
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
-        JButton btnAddDb = createActionButton("Add Data On Database", tableHeaderGreen);
+        JButton btnAddDb = createActionButton("Add Data On Database", tableHeaderBlue);
         btnAddDb.setPreferredSize(new Dimension(180, 45));
         pnlBody.add(btnAddDb, gbc);
 

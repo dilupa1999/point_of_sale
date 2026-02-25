@@ -13,7 +13,7 @@ import java.awt.event.ComponentEvent;
 public class ExpensesReportPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color headerBlue = new Color(30, 136, 229);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color fieldBg = new Color(245, 245, 250);
 
     private JTable table;
@@ -132,7 +132,7 @@ public class ExpensesReportPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(headerBlue);
+                lbl.setBackground(tableHeaderBlue);
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);

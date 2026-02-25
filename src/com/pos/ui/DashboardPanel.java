@@ -28,18 +28,59 @@ public class DashboardPanel extends JPanel {
     }
 
     private void initComponents() {
-        // --- Header / Breadcrumbs ---
-        JPanel pnlHeader = new JPanel(new BorderLayout());
-        pnlHeader.setBackground(Color.WHITE);
-        pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
+        // --- Top Header (Matching other panels) ---
+        JPanel pnlTopHeader = new JPanel(new BorderLayout());
+        pnlTopHeader.setBackground(primaryBlue);
+        pnlTopHeader.setPreferredSize(new Dimension(0, 70));
+        pnlTopHeader.setBorder(new javax.swing.border.EmptyBorder(0, 20, 0, 20));
+
+        JPanel pnlTopLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
+        pnlTopLeft.setOpaque(false);
+        // No back button for dashboard usually, but we can add POS button
+        JButton btnPOS = createHeaderButton("POS", false);
+        pnlTopLeft.add(btnPOS);
+        pnlTopHeader.add(pnlTopLeft, BorderLayout.WEST);
+
+        // Center Title
+        JPanel pnlCenterTitle = new JPanel(new GridBagLayout());
+        pnlCenterTitle.setOpaque(false);
+        JLabel lblTopTitle = new JLabel("POS SYSTEM");
+        lblTopTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTopTitle.setForeground(Color.WHITE);
+        pnlCenterTitle.add(lblTopTitle);
+        pnlTopHeader.add(pnlCenterTitle, BorderLayout.CENTER);
+
+        JPanel pnlTopRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
+        pnlTopRight.setOpaque(false);
+        JLabel lblWelcome = new JLabel("<html><div style='text-align: right;'><span style='font-size: 16px; font-weight: bold;'>Good Afternoon!</span><br>Welcome Hypermart</div></html>");
+        lblWelcome.setForeground(Color.WHITE);
+        
+        JButton btnPower = createHeaderButton("\u23FB", true);
+        btnPower.setFont(new Font("Segoe UI", Font.BOLD, 20));
+
+        pnlTopRight.add(lblWelcome);
+        pnlTopRight.add(btnPower);
+        pnlTopHeader.add(pnlTopRight, BorderLayout.EAST);
+
+        add(pnlTopHeader, BorderLayout.NORTH);
+
+        // --- Main Content Container ---
+        JPanel pnlMain = new JPanel(new BorderLayout());
+        pnlMain.setBackground(Color.WHITE);
+
+        // Header / Breadcrumbs inside content
+        JPanel pnlContentHeader = new JPanel(new BorderLayout());
+        pnlContentHeader.setBackground(Color.WHITE);
+        pnlContentHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
 
         JLabel lblBreadcrumb = new JLabel("Main Panel > Dashboard");
         lblBreadcrumb.setForeground(breadcrumbGray);
-        pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
+        lblBreadcrumb.setFont(fontLabel);
+        pnlContentHeader.add(lblBreadcrumb, BorderLayout.WEST);
 
-        add(pnlHeader, BorderLayout.NORTH);
+        pnlMain.add(pnlContentHeader, BorderLayout.NORTH);
 
-        // --- Content ---
+        // --- Scrollable Content ---
         JPanel pnlContent = new JPanel();
         pnlContent.setLayout(new BoxLayout(pnlContent, BoxLayout.Y_AXIS));
         pnlContent.setBackground(Color.WHITE);
@@ -72,32 +113,163 @@ public class DashboardPanel extends JPanel {
         pnlContent.add(pnlStats);
         pnlContent.add(Box.createVerticalStrut(30));
 
-        // 3. Alerts Section (Bottom)
+        // 3. Action Buttons Section (New)
+        JPanel pnlActionsRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        pnlActionsRow.setOpaque(false);
+        pnlActionsRow.add(createActionButton("Expiry Alert", new Color(67, 160, 71)));
+        pnlActionsRow.add(createActionButton("Sales Chart", primaryBlue));
+        pnlActionsRow.add(createActionButton("Stock Alert", new Color(120, 144, 156)));
+        
+        pnlContent.add(pnlActionsRow);
+        pnlContent.add(Box.createVerticalStrut(30));
+
+        // 4. Alerts Section (Bottom)
         JPanel pnlAlertsHeader = new JPanel(new BorderLayout());
         pnlAlertsHeader.setOpaque(false);
         JLabel lblAlertTitle = new JLabel("Items Expiring Within 5 Days");
         lblAlertTitle.setFont(fontTitle);
         pnlAlertsHeader.add(lblAlertTitle, BorderLayout.WEST);
         
-        JButton btnAlertStatus = new JButton("No items expiring soon");
-        btnAlertStatus.setBackground(primaryBlue);
-        btnAlertStatus.setForeground(Color.WHITE);
-        btnAlertStatus.setFocusPainted(false);
-        btnAlertStatus.setBorder(new EmptyBorder(5, 15, 5, 15));
-        pnlAlertsHeader.add(btnAlertStatus, BorderLayout.EAST);
+        JLabel lblExpiryCount = new JLabel("1 Items expiring soon") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+        };
+        lblExpiryCount.setOpaque(false);
+        lblExpiryCount.setBackground(new Color(255, 120, 120)); // Softer red
+        lblExpiryCount.setForeground(Color.WHITE);
+        lblExpiryCount.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblExpiryCount.setBorder(new EmptyBorder(5, 15, 5, 15));
+        lblExpiryCount.setHorizontalAlignment(SwingConstants.CENTER);
+        pnlAlertsHeader.add(lblExpiryCount, BorderLayout.EAST);
 
         pnlContent.add(pnlAlertsHeader);
         pnlContent.add(Box.createVerticalStrut(20));
 
-        // Expiry Message
-        JLabel lblEmptyMsg = new JLabel("All items are within safe expiry dates!", SwingConstants.CENTER);
-        lblEmptyMsg.setForeground(Color.GRAY);
-        lblEmptyMsg.setAlignmentX(Component.CENTER_ALIGNMENT);
-        pnlContent.add(lblEmptyMsg);
+        // Expiry Table Section
+        String[] columns = {"#", "ITEM NAME", "STOCK QUANTITY", "EXPIRY DATE", "DAYS LEFT"};
+        javax.swing.table.DefaultTableModel expiryModel = new javax.swing.table.DefaultTableModel(columns, 0);
+        JTable tableExpiry = new JTable(expiryModel);
+        
+        tableExpiry.setRowHeight(45);
+        tableExpiry.setShowGrid(false);
+        tableExpiry.setIntercellSpacing(new Dimension(0, 0));
+        
+        // Red Header Styling
+        javax.swing.table.JTableHeader header = tableExpiry.getTableHeader();
+        header.setPreferredSize(new Dimension(0, 40));
+        header.setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                lbl.setBackground(new Color(229, 57, 53)); // Primary Red
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                lbl.setHorizontalAlignment(SwingConstants.CENTER);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.WHITE));
+                return lbl;
+            }
+        });
+
+        // Custom Cell Rendering
+        tableExpiry.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                if (column == 4) { // DAYS LEFT Column
+                    JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
+                    p.setBackground(new Color(255, 235, 238));
+                    JLabel badge = new JLabel("TODAY");
+                    badge.setOpaque(true);
+                    badge.setBackground(new Color(229, 57, 53));
+                    badge.setForeground(Color.WHITE);
+                    badge.setFont(new Font("Segoe UI", Font.BOLD, 10));
+                    badge.setBorder(new EmptyBorder(2, 10, 2, 10));
+                    p.add(badge);
+                    p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(240, 240, 245)));
+                    return p;
+                }
+                
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                lbl.setHorizontalAlignment(SwingConstants.CENTER);
+                lbl.setBackground(new Color(255, 235, 238)); // Light red background for expiring
+                lbl.setForeground(new Color(183, 28, 28));
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(240, 240, 245)));
+                return lbl;
+            }
+        });
+
+        // Add Sample Data
+        expiryModel.addRow(new Object[]{"1", "Kellogg's Chocos 127g", "5", "Feb 25, 2026", "TODAY"});
+
+        JScrollPane scrollExpiry = new JScrollPane(tableExpiry);
+        scrollExpiry.setPreferredSize(new Dimension(0, 150));
+        scrollExpiry.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
+        scrollExpiry.setBorder(new LineBorder(new Color(240, 240, 245)));
+        scrollExpiry.getViewport().setBackground(Color.WHITE);
+        
+        pnlContent.add(scrollExpiry);
+        pnlContent.add(Box.createVerticalStrut(20));
 
         JScrollPane scrollPane = new JScrollPane(pnlContent);
         scrollPane.setBorder(null);
-        add(scrollPane, BorderLayout.CENTER);
+        pnlMain.add(scrollPane, BorderLayout.CENTER);
+        
+        add(pnlMain, BorderLayout.CENTER);
+    }
+
+    private JButton createHeaderButton(String text, boolean isCircle) {
+        JButton btn = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+        };
+        btn.setFont(new Font("Segoe UI", Font.BOLD, isCircle ? 18 : 13));
+        btn.setForeground(new Color(50, 50, 50));
+        btn.setBackground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorder(null);
+        btn.setContentAreaFilled(false);
+        if (isCircle) {
+            btn.setPreferredSize(new Dimension(50, 45));
+        } else {
+            btn.setPreferredSize(new Dimension(100, 45));
+        }
+        return btn;
+    }
+
+    private JButton createActionButton(String text, Color bg) {
+        JButton btn = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+        };
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(bg);
+        btn.setFocusPainted(false);
+        btn.setBorder(null);
+        btn.setContentAreaFilled(false);
+        btn.setPreferredSize(new Dimension(130, 40));
+        return btn;
     }
 
     private void setupResponsiveness() {

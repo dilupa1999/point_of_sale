@@ -11,8 +11,8 @@ import java.awt.*;
 public class ItemStockCountPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color headerBlue = new Color(30, 136, 229);
-    private final Color actionGreen = new Color(139, 195, 74);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color resetBlack = new Color(33, 33, 33);
     private final Color fieldBg = new Color(245, 245, 250);
 
@@ -132,12 +132,12 @@ public class ItemStockCountPanel extends JPanel {
         // Buttons
         gbc.weightx = 0;
         gbc.gridx = 4;
-        JButton btnSubmit = createMiniButton("Submit", actionGreen);
+        JButton btnSubmit = createMiniButton("Submit", actionBlue);
         btnSubmit.setPreferredSize(new Dimension(100, 45));
         pnlFilters.add(btnSubmit, gbc);
 
         gbc.gridx = 5;
-        JButton btnReset = createMiniButton("Reset", resetBlack);
+        JButton btnReset = createMiniButton("Reset", tableHeaderBlue);
         btnReset.setPreferredSize(new Dimension(100, 45));
         pnlFilters.add(btnReset, gbc);
 
@@ -174,7 +174,7 @@ public class ItemStockCountPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(actionGreen); // Green header as per screenshot
+                lbl.setBackground(tableHeaderBlue); // Blue header as per theme
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 10));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);

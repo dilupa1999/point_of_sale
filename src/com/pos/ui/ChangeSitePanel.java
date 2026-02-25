@@ -8,10 +8,11 @@ import java.awt.*;
 public class ChangeSitePanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color fieldBg = new Color(245, 245, 250);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color cancelRed = new Color(211, 47, 47);
-    private final Color updateGreen = new Color(100, 175, 80);
     private final Color resetBlack = new Color(33, 33, 33);
+    private final Color fieldBg = new Color(245, 245, 250);
     private final Font fontBold14 = new Font("Segoe UI", Font.BOLD, 14);
     private final Font fontPlain13 = new Font("Segoe UI", Font.PLAIN, 13);
 
@@ -121,8 +122,8 @@ public class ChangeSitePanel extends JPanel {
         gbc.insets = new Insets(40, 0, 0, 0);
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 25, 0));
         pnlButtons.setOpaque(false);
-        pnlButtons.add(createActionButton("Update", updateGreen));
-        pnlButtons.add(createActionButton("Reset System", resetBlack));
+        pnlButtons.add(createActionButton("Update", actionBlue));
+        pnlButtons.add(createActionButton("Reset System", tableHeaderBlue));
         pnlButtons.add(createActionButton("Cancel", cancelRed));
         pnlForm.add(pnlButtons, gbc);
 

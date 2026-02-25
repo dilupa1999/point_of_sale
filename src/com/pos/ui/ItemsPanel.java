@@ -21,18 +21,60 @@ public class ItemsPanel extends JPanel {
     }
 
     private void initComponents(MainFrame mainFrame) {
-        // --- Header / Breadcrumbs ---
-        JPanel pnlHeader = new JPanel(new BorderLayout());
-        pnlHeader.setBackground(Color.WHITE);
-        pnlHeader.setBorder(new EmptyBorder(15, 25, 10, 25));
+        // --- Top Header (Blue) ---
+        JPanel pnlTopHeader = new JPanel(new BorderLayout());
+        pnlTopHeader.setBackground(primaryBlue);
+        pnlTopHeader.setPreferredSize(new Dimension(0, 70));
+        pnlTopHeader.setBorder(new EmptyBorder(0, 20, 0, 20));
 
+        // Left section: Back, Main Panel, POS
+        JPanel pnlTopLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
+        pnlTopLeft.setOpaque(false);
+
+        JButton btnPOS = createHeaderButton("POS", false);
+        btnPOS.addActionListener(e -> mainFrame.showPanel("POS"));
+
+        pnlTopLeft.add(btnPOS);
+        pnlTopHeader.add(pnlTopLeft, BorderLayout.WEST);
+
+        // Center section: Title
+        JPanel pnlLogo = new JPanel(new GridBagLayout());
+        pnlLogo.setOpaque(false);
+        JLabel lblLogo = new JLabel("POS SYSTEM");
+        lblLogo.setForeground(Color.WHITE);
+        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        pnlLogo.add(lblLogo);
+        pnlTopHeader.add(pnlLogo, BorderLayout.CENTER);
+
+        // Right section: Welcome message
+        JPanel pnlTopRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
+        pnlTopRight.setOpaque(false);
+        JLabel lblWelcome = new JLabel("<html><div style='text-align: right;'><span style='font-size: 16px; font-weight: bold;'>Good Evening!</span><br>Welcome Pos System</div></html>");
+        lblWelcome.setForeground(Color.WHITE);
+        
+        JButton btnPower = createHeaderButton("\u23FB", true);
+        btnPower.setFont(new Font("Segoe UI", Font.BOLD, 22));
+
+        pnlTopRight.add(lblWelcome);
+        pnlTopRight.add(btnPower);
+        pnlTopHeader.add(pnlTopRight, BorderLayout.EAST);
+
+        add(pnlTopHeader, BorderLayout.NORTH);
+
+        // --- Content Area Wrapper ---
+        JPanel pnlMain = new JPanel(new BorderLayout());
+        pnlMain.setBackground(Color.WHITE);
+
+        // Breadcrumbs
+        JPanel pnlBreadcrumb = new JPanel(new FlowLayout(FlowLayout.LEFT, 25, 15));
+        pnlBreadcrumb.setOpaque(false);
         JLabel lblBreadcrumb = new JLabel("Main Panel > Items");
         lblBreadcrumb.setForeground(new Color(100, 100, 100));
-        pnlHeader.add(lblBreadcrumb, BorderLayout.WEST);
+        lblBreadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        pnlBreadcrumb.add(lblBreadcrumb);
+        pnlMain.add(pnlBreadcrumb, BorderLayout.NORTH);
 
-        add(pnlHeader, BorderLayout.NORTH);
-
-        // --- Content Area ---
+        // Content Area 
         JPanel pnlContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         pnlContent.setBackground(Color.WHITE);
         pnlContent.setBorder(new EmptyBorder(10, 40, 40, 40));
@@ -67,7 +109,8 @@ public class ItemsPanel extends JPanel {
 
         pnlContent.add(pnlGrid);
 
-        add(new JScrollPane(pnlContent), BorderLayout.CENTER);
+        pnlMain.add(new JScrollPane(pnlContent), BorderLayout.CENTER);
+        add(pnlMain, BorderLayout.CENTER);
     }
 
     private void setupResponsiveness() {
@@ -108,6 +151,32 @@ public class ItemsPanel extends JPanel {
             }
         });
 
+        return btn;
+    }
+
+    private JButton createHeaderButton(String text, boolean isCircle) {
+        JButton btn = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+        };
+        btn.setFont(new Font("Segoe UI", Font.BOLD, isCircle ? 18 : 13));
+        btn.setForeground(primaryBlue);
+        btn.setBackground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorder(null);
+        btn.setContentAreaFilled(false);
+        if (isCircle) {
+            btn.setPreferredSize(new Dimension(50, 45));
+        } else {
+            btn.setPreferredSize(new Dimension(130, 45));
+        }
         return btn;
     }
 

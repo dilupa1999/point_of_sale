@@ -13,13 +13,13 @@ public class SalesReportPanel extends JPanel {
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color filterBlue = new Color(13, 71, 161);
     private final Color clearGray = new Color(120, 144, 156);
-    private final Color tableHeaderBlue = new Color(30, 136, 229);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color paidBadgeBg = new Color(225, 245, 254);
     private final Color paidBadgeFg = new Color(1, 87, 155);
-    private final Color dueBadgeBg = new Color(224, 242, 241);
-    private final Color dueBadgeFg = new Color(0, 121, 107);
-    private final Color actionBlue = new Color(3, 169, 244);
-    private final Color actionGreen = new Color(67, 160, 71);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color secondaryBlue = new Color(21, 101, 192);
+    private final Color dueBadgeBg = new Color(235, 241, 250);
+    private final Color dueBadgeFg = new Color(25, 118, 210);
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -405,12 +405,12 @@ public class SalesReportPanel extends JPanel {
 
             if ("DUE".equals(status)) {
                 JButton btnPay = new JButton("Pay");
-                styleActionButton(btnPay, actionGreen);
+                styleActionButton(btnPay, actionBlue);
                 p.add(btnPay);
             }
 
             JButton btnMore = new JButton("MORE");
-            styleActionButton(btnMore, actionBlue);
+            styleActionButton(btnMore, secondaryBlue);
             p.add(btnMore);
 
             p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 235)));

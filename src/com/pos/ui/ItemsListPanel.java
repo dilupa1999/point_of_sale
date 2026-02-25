@@ -11,9 +11,9 @@ import java.awt.*;
 public class ItemsListPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color vibrantGreen = new Color(0, 200, 83);
+    private final Color actionBlue = new Color(25, 118, 210);
     private final Color btnResetGray = new Color(80, 80, 85);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color outOfStockRed = new Color(211, 47, 47);
     private final Color headerBg = primaryBlue;
 
@@ -90,7 +90,7 @@ public class ItemsListPanel extends JPanel {
         lblBreadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         pnlTopActions.add(lblBreadcrumb, BorderLayout.WEST);
 
-        JButton btnColVisibility = createMiniButton("Column Visibility", tableHeaderGreen);
+        JButton btnColVisibility = createMiniButton("Column Visibility", tableHeaderBlue);
         pnlTopActions.add(btnColVisibility, BorderLayout.EAST);
 
         pnlMain.add(pnlTopActions, BorderLayout.NORTH);
@@ -109,8 +109,8 @@ public class ItemsListPanel extends JPanel {
         txtSearch.setForeground(Color.GRAY);
         txtSearch.setBorder(new LineBorder(new Color(230, 230, 235)));
         pnlSearch.add(txtSearch);
-        pnlSearch.add(createMiniButton("Search", vibrantGreen));
-        pnlSearch.add(createMiniButton("Reset", tableHeaderGreen));
+        pnlSearch.add(createMiniButton("Search", actionBlue));
+        pnlSearch.add(createMiniButton("Reset", tableHeaderBlue));
         pnlFiltersRow.add(pnlSearch, BorderLayout.WEST);
 
         pnlSort = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
@@ -152,7 +152,7 @@ public class ItemsListPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(tableHeaderGreen);
+                lbl.setBackground(tableHeaderBlue);
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);
@@ -298,10 +298,9 @@ public class ItemsListPanel extends JPanel {
             p.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
             
             JLabel lbl = new JLabel("In Stock");
-            lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
-            lbl.setForeground(vibrantGreen);
+            lbl.setForeground(actionBlue);
             lbl.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(vibrantGreen, 1, true),
+                new LineBorder(actionBlue, 1, true),
                 new EmptyBorder(4, 12, 4, 12)
             ));
             
