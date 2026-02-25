@@ -1,0 +1,44 @@
+-------------------------------------------------------------------
+ONLINE-OFFLINE POS SYNCHRONIZATION PROCESS STEPS
+-------------------------------------------------------------------
+
+1. SYSTEM IDENTITY SETUP
+   - Every local POS installation must be assigned a unique "POS System ID" (e.g., POS-COLOMBO-01).
+   - This ID is stored in a local configuration file (config.properties).
+   - All sales pushed to the online system will carry this ID.
+
+2. LOGIN & INITIAL PULL (Internet Required)
+   - When the user logs in, the system MUST check for an active internet connection.
+   - If online:
+     * Authenticate user with the Online Server.
+     * Download any new Items, Prices, or Customers added online since the last sync.
+     * Update the local database (SQLite) with this new data.
+   - This ensures the local POS always starts with the latest information.
+
+3. LOCAL DATA STORAGE (The "Offline Engine")
+   - The Java system will use a local SQLite database (a single file) to store data.
+   - Tables: items, customers, sales, sales_items, payments.
+   - Each record will have a column 'is_synced' (0 = No, 1 = Yes).
+
+4. OFFLINE TRANSACTIONS
+   - When there is no internet, the POS continues to work using the local SQLite data.
+   - Every new sale is saved locally with 'is_synced = 0'.
+   - The UI should display a "Sync Pending" status to the operator.
+
+5. AUTOMATIC PUSH SYNC (Background Process)
+   - A background thread (timer) checks for internet connectivity every 2-5 minutes.
+   - Once internet is back:
+     * The system finds all sales where 'is_synced = 0'.
+     * It sends these sales as a batch to the Laravel API.
+     * If the API returns a success (200 OK), the local records are updated to 'is_synced = 1'.
+
+6. CONFLICT MANAGEMENT
+   - If an item's price was changed online while the POS was offline, the system can:
+     * Option A: Use the local price at the time of sale (Standard for retail).
+     * Option B: Update the local price immediately on reconnect.
+   - The system uses a 'last_updated' timestamp to handle these decisions.
+
+-------------------------------------------------------------------
+Prepared for: SRN Company
+Project: Hypermart & POS Sync System
+-------------------------------------------------------------------

@@ -1,0 +1,45 @@
+-------------------------------------------------------------------
+IMPLEMENTATION STEPS FOR ONLINE-OFFLINE SYNC (MYSQL)
+-------------------------------------------------------------------
+
+FOLLOW THESE STEPS IN ORDER:
+
+STEP 1: ADD MYSQL CONNECTOR TO JAVA PROJECT
+- Download 'mysql-connector-java-8.x.jar'.
+- In NetBeans/IDE: Right-click Project -> Properties -> Libraries -> Add JAR/Folder.
+- Select the downloaded JAR file to enable MySQL connectivity.
+
+STEP 2: CREATE LOCAL CONFIGURATION
+- Create a file named 'config.properties' in your project root.
+- Add these lines:
+    pos_system_id=POS-SRN-01
+    db.url=jdbc:mysql://localhost:3306/your_local_db
+    db.user=root
+    db.password=yourpassword
+
+STEP 3: CREATE DATABASE CONNECTION CLASS
+- Create 'com.pos.db.DBConnection'.
+- Use standard JDBC code:
+    Class.forName("com.mysql.cj.jdbc.Driver");
+    return DriverManager.getConnection(url, user, pass);
+
+STEP 4: IMPLEMENT SYNC SERVICE (PULL & PUSH)
+- PULL (On Login):
+    1. Call Laravel API: GET /api/items?last_sync=YYYY-MM-DD
+    2. Loop through JSON results.
+    3. Run 'INSERT INTO items ... ON DUPLICATE KEY UPDATE' in local MySQL.
+- PUSH (Background Timer):
+    1. SELECT * FROM sales WHERE is_synced = 0.
+    2. Send list to Laravel API: POST /api/sync-sales.
+    3. If 200 OK: UPDATE sales SET is_synced = 1 WHERE id = ?.
+
+STEP 5: UPDATE UI LOGIC
+- In POSPanel.java/POS_UI.java:
+  * When 'Pay' is clicked, save to local MySQL first with is_synced=0.
+  * Update the product stock in local MySQL immediately.
+- Use a 'javax.swing.Timer' (every 3 minutes) to trigger Step 4 Push logic.
+
+-------------------------------------------------------------------
+Prepared for: SRN Company
+Project: Online-Offline Sync Module
+-------------------------------------------------------------------
