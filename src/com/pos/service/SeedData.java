@@ -20,11 +20,12 @@ public class SeedData {
                             "(5, 'I005', 'Butter 200g', 500, 600, 580, '1005', 25) " +
                             "ON DUPLICATE KEY UPDATE `item_name`=VALUES(`item_name`), `retail_price`=VALUES(`retail_price`)");
 
-            // Seed Customers
-            MySQL.execute("INSERT INTO `customers` (`id`, `customer_name`, `contact_number`) VALUES " +
-                    "(1, 'John Doe', '0771234567'), " +
-                    "(2, 'Jane Smith', '0719876543') " +
-                    "ON DUPLICATE KEY UPDATE `customer_name`=VALUES(`customer_name`)");
+            // Ensure is_synced exists in sales
+            try {
+                MySQL.execute("ALTER TABLE `sales` ADD COLUMN `is_synced` TINYINT(1) DEFAULT 0");
+            } catch (Exception e) {
+                // Ignore if column already exists
+            }
 
             System.out.println("Seeding completed successfully!");
         } catch (Exception e) {

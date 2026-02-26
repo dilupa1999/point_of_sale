@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 public class LoginFrame extends JFrame {
 
@@ -154,6 +156,37 @@ public class LoginFrame extends JFrame {
                         }
                     }
                     com.pos.service.SyncService.setAccessToken(token);
+
+                    // Extract User ID robustly using GSON
+                    int userId = 1;
+                    try {
+                        JsonObject respObj = new Gson().fromJson(response, JsonObject.class);
+                        if (respObj.has("user") && !respObj.get("user").isJsonNull()) {
+                            JsonObject userObj = respObj.getAsJsonObject("user");
+                            if (userObj.has("id")) {
+                                userId = userObj.get("id").getAsInt();
+                            }
+                        }
+                    } catch (Exception exJson) {
+                        // Fallback to extraction if GSON fails for some reason
+                        int idIndex = response.indexOf("\"id\":");
+                        if (idIndex != -1) {
+                            int start = idIndex + 5;
+                            int end = response.indexOf(",", start);
+                            if (end == -1)
+                                end = response.indexOf("}", start);
+                            if (start > 0 && end > start) {
+                                try {
+                                    String idStr = response.substring(start, end).replace("\"", "").replace(":", "")
+                                            .trim();
+                                    userId = Integer.parseInt(idStr);
+                                } catch (Exception ex3) {
+                                }
+                            }
+                        }
+                    }
+                    com.pos.service.SyncService.setCurrentUserId(userId);
+
                     com.pos.service.SyncService.startSyncThread();
 
                     this.dispose();
@@ -171,9 +204,9 @@ public class LoginFrame extends JFrame {
                     }
                     JOptionPane.showMessageDialog(this, message, "Login Failed", JOptionPane.ERROR_MESSAGE);
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "API Connection error: " + ex.getMessage(), "System Error",
+            } catch (Exception ex2) {
+                ex2.printStackTrace();
+                JOptionPane.showMessageDialog(this, "API Connection error: " + ex2.getMessage(), "System Error",
                         JOptionPane.ERROR_MESSAGE);
             }
         });

@@ -56,7 +56,13 @@ public class ReceiptPrinter implements Printable {
         y += 10;
         drawCenteredString(g2d, (String) saleData.get("phone"), width, y);
         y += 10;
-        drawCenteredString(g2d, "SALE CODE: " + saleData.get("sales_code"), width, y);
+
+        String type = (String) saleData.getOrDefault("type", "SALE");
+        if ("PAYMENT".equals(type)) {
+            drawCenteredString(g2d, "========== PAYMENT RECEIPT ==========", width, y);
+        } else {
+            drawCenteredString(g2d, "SALE CODE: " + saleData.get("sales_code"), width, y);
+        }
         y += 15;
 
         // Metadata
@@ -67,70 +73,100 @@ public class ReceiptPrinter implements Printable {
         g2d.drawString("CUS: " + saleData.get("customer"), 5, y);
         g2d.drawString("PTYPE: " + saleData.get("ptype"), 110, y);
         y += 10;
-        g2d.drawString("USER: " + saleData.get("user"), 5, y);
-        g2d.drawString("STYPE: " + saleData.get("stype"), 110, y);
+        g2d.drawString("CUSID: " + saleData.getOrDefault("customerId", "-"), 5, y);
+        g2d.drawString("USER: " + saleData.get("user"), 110, y);
         y += 12;
 
-        // Table Header
-        g2d.drawLine(5, y, width - 5, y);
-        y += 10;
-        g2d.setFont(fontBold);
-        g2d.drawString("LN", 5, y);
-        g2d.drawString("ITEM", 25, y);
-        g2d.drawString("QTY", 75, y);
-        g2d.drawString("M.PRICE", 100, y);
-        g2d.drawString("O.PRICE", 140, y);
-        g2d.drawString("AMOUNT", 175, y);
-        y += 10;
-        g2d.drawLine(5, y, width - 5, y);
-        y += 10;
+        if ("PAYMENT".equals(type)) {
+            // Payment Receipt Details
+            g2d.drawLine(5, y, width - 5, y);
+            y += 15;
+            drawSummaryRow(g2d, "DUE AMOUNT", (String) saleData.get("due_amount"), width, y);
+            y += 12;
+            drawSummaryRow(g2d, "AMOUNT PAID", (String) saleData.get("amount_paid"), width, y);
+            y += 12;
+            drawSummaryRow(g2d, "REMAINING BALANCE", (String) saleData.get("remaining_balance"), width, y);
+            y += 15;
+            g2d.drawLine(5, y, width - 5, y);
+            y += 15;
 
-        // Items
-        g2d.setFont(fontTable);
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> items = (List<Map<String, Object>>) saleData.get("items");
-        for (Map<String, Object> item : items) {
-            g2d.drawString(String.valueOf(item.get("ln")), 5, y);
-            String itemName = (String) item.get("item");
-            if (itemName.length() > 20)
-                itemName = itemName.substring(0, 18) + "..";
-            g2d.drawString(itemName, 25, y);
-            y += 8;
-            g2d.drawString(item.get("qty") + " " + item.get("unit"), 35, y);
-            g2d.drawString(String.valueOf(item.get("market_price")), 100, y);
-            g2d.drawString(String.valueOf(item.get("our_price")), 140, y);
-            g2d.drawString(String.valueOf(item.get("amount")), 175, y);
+            // Footer for Payment
+            g2d.setFont(fontBold);
+            drawCenteredString(g2d, "--------- THANK YOU! VISIT AGAIN ---------", width, y);
+            y += 12;
+            g2d.setFont(fontTable);
+            drawCenteredString(g2d, "# No warranty.", width, y);
             y += 10;
+            drawCenteredString(g2d, "# We are not responsible for colour changes after purchased.", width, y);
+            y += 10;
+            drawCenteredString(g2d, "# Bill must be produced for claims....", width, y);
+            y += 15;
+            g2d.drawLine(5, y, width - 5, y);
+            y += 15;
+            drawCenteredString(g2d, "Powered by Silicon Radon Networks (Pvt) Ltd.", width, y);
+
+        } else {
+            // Original Sale Table Header
+            g2d.drawLine(5, y, width - 5, y);
+            y += 10;
+            g2d.setFont(fontBold);
+            g2d.drawString("LN", 5, y);
+            g2d.drawString("ITEM", 25, y);
+            g2d.drawString("QTY", 75, y);
+            g2d.drawString("M.PRICE", 100, y);
+            g2d.drawString("O.PRICE", 140, y);
+            g2d.drawString("AMOUNT", 175, y);
+            y += 10;
+            g2d.drawLine(5, y, width - 5, y);
+            y += 10;
+
+            // Items
+            g2d.setFont(fontTable);
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> items = (List<Map<String, Object>>) saleData.get("items");
+            for (Map<String, Object> item : items) {
+                g2d.drawString(String.valueOf(item.get("ln")), 5, y);
+                String itemName = (String) item.get("item");
+                if (itemName.length() > 20)
+                    itemName = itemName.substring(0, 18) + "..";
+                g2d.drawString(itemName, 25, y);
+                y += 8;
+                g2d.drawString(item.get("qty") + " " + item.get("unit"), 35, y);
+                g2d.drawString(String.valueOf(item.get("market_price")), 100, y);
+                g2d.drawString(String.valueOf(item.get("our_price")), 140, y);
+                g2d.drawString(String.valueOf(item.get("amount")), 175, y);
+                y += 10;
+            }
+            g2d.drawLine(5, y, width - 5, y);
+            y += 12;
+
+            // Calculation Details
+            drawSummaryRow(g2d, "TOTAL", (String) saleData.get("total"), width, y);
+            y += 10;
+            drawSummaryRow(g2d, "NET TOTAL", (String) saleData.get("net_total"), width, y);
+            y += 10;
+            drawSummaryRow(g2d, "RECEIVED", (String) saleData.get("received"), width, y);
+            y += 10;
+            drawSummaryRow(g2d, "PAID", (String) saleData.get("paid"), width, y);
+            y += 10;
+            drawSummaryRow(g2d, "CHANGE", (String) saleData.get("change"), width, y);
+            y += 10;
+            drawSummaryRow(g2d, "TOTAL DUE", (String) saleData.get("due"), width, y);
+            y += 10;
+            drawSummaryRow(g2d, "NO OF ITEMS", (String) saleData.get("count"), width, y);
+            y += 15;
+
+            // Footer
+            g2d.setFont(fontBold);
+            drawCenteredString(g2d, "PLEASE CHECK THE RECEIVED GOODS", width, y);
+            y += 10;
+            drawCenteredString(g2d, "THANKS FOR SHOPPING WITH US!", width, y);
+            y += 10;
+            g2d.drawLine(5, y, width - 5, y);
+            y += 10;
+            g2d.setFont(fontTable);
+            drawCenteredString(g2d, "Powered by Silicon Radon Networks (Pvt) Ltd.", width, y);
         }
-        g2d.drawLine(5, y, width - 5, y);
-        y += 12;
-
-        // Calculation Details
-        drawSummaryRow(g2d, "TOTAL", (String) saleData.get("total"), width, y);
-        y += 10;
-        drawSummaryRow(g2d, "NET TOTAL", (String) saleData.get("net_total"), width, y);
-        y += 10;
-        drawSummaryRow(g2d, "RECEIVED", (String) saleData.get("received"), width, y);
-        y += 10;
-        drawSummaryRow(g2d, "PAID", (String) saleData.get("paid"), width, y);
-        y += 10;
-        drawSummaryRow(g2d, "CHANGE", (String) saleData.get("change"), width, y);
-        y += 10;
-        drawSummaryRow(g2d, "TOTAL DUE", (String) saleData.get("due"), width, y);
-        y += 10;
-        drawSummaryRow(g2d, "NO OF ITEMS", (String) saleData.get("count"), width, y);
-        y += 15;
-
-        // Footer
-        g2d.setFont(fontBold);
-        drawCenteredString(g2d, "PLEASE CHECK THE RECEIVED GOODS", width, y);
-        y += 10;
-        drawCenteredString(g2d, "THANKS FOR SHOPPING WITH US!", width, y);
-        y += 10;
-        g2d.drawLine(5, y, width - 5, y);
-        y += 10;
-        g2d.setFont(fontTable);
-        drawCenteredString(g2d, "Powered by Silicon Radon Networks (Pvt) Ltd.", width, y);
 
         return PAGE_EXISTS;
     }

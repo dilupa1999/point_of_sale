@@ -49,10 +49,16 @@ public class POSPanel extends JPanel {
     private JButton btnMinus;
     private JButton btnPlus;
     private JTextField txtQty;
+    private JButton btnSync;
+    private JLabel lblSyncStatus;
     private JPanel pnlResults;
     private JLabel lblTotalItems, lblTotalQty, lblTotalAmount, lblGrandTotal;
+    private JButton btnPendingSync;
 
     // --- Dropdown for Customer Search ---
+    private boolean isCustomerSelecting = false;
+    private String lastCustomerSearchQuery = "";
+    private javax.swing.Timer customerSearchTimer;
     private JPopupMenu customerPopup;
     private JList<String> customerList;
     private DefaultListModel<String> customerListModel;
@@ -68,6 +74,7 @@ public class POSPanel extends JPanel {
         setupPlaceholder(txtCustomerSearch, "Search Customer...");
         setupPlaceholder(txtBarcode, "Enter a valid barcode");
         setupPlaceholder(txtRightSearch, "Search for items...");
+        updateSyncStatusCount();
         com.pos.service.SeedData.seed(); // Temporary seed for testing
         performItemSearch(""); // Initial load
     }
@@ -110,15 +117,37 @@ public class POSPanel extends JPanel {
 
         JPanel pnlHeaderBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         pnlHeaderBtns.setOpaque(false);
+
+        lblSyncStatus = new JLabel("Pending Sync: 0");
+        lblSyncStatus.setFont(fontBold12);
+        lblSyncStatus.setForeground(new Color(130, 130, 130));
+
         btnRetail = createHeaderBtn("Retail", buttonBlue, Color.WHITE);
         btnWholesale = createHeaderBtn("Wholesale", Color.WHITE, Color.BLACK);
+        btnSync = createHeaderBtn("Sync Online", new Color(46, 125, 50), Color.WHITE);
 
         btnRetail.addActionListener(e -> setPOSMode(true));
         btnWholesale.addActionListener(e -> setPOSMode(false));
 
         btnViewHold = createHeaderBtn("View Hold List", Color.WHITE, Color.BLACK);
         btnViewHold.addActionListener(e -> showHoldListDialog());
+        btnSync.addActionListener(e -> handleManualSync());
         updateHoldCount();
+        updateSyncStatusCount();
+
+        com.pos.service.SyncService.setOnSyncCompleteListener(() -> {
+            updateSyncStatusCount();
+        });
+
+        btnPendingSync = new JButton("View");
+        btnPendingSync.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        btnPendingSync.setPreferredSize(new Dimension(60, 25));
+        btnPendingSync.setBackground(Color.WHITE);
+        btnPendingSync.addActionListener(e -> showPendingSyncDialog());
+
+        pnlHeaderBtns.add(lblSyncStatus);
+        pnlHeaderBtns.add(btnPendingSync);
+        pnlHeaderBtns.add(btnSync);
         pnlHeaderBtns.add(btnViewHold);
         pnlHeaderBtns.add(btnRetail);
         pnlHeaderBtns.add(btnWholesale);
@@ -152,6 +181,7 @@ public class POSPanel extends JPanel {
         btnUser.setPreferredSize(new Dimension(50, 45));
         btnUser.setFocusPainted(false);
         btnUser.setBorder(null);
+        btnUser.addActionListener(e -> showAddCustomerDialog());
         pnlControls.add(btnUser, gbc);
 
         // Barcode Input
@@ -349,10 +379,12 @@ public class POSPanel extends JPanel {
 
     private void setupCustomerSearchDropdown() {
         customerPopup = new JPopupMenu();
+        customerPopup.setFocusable(false);
         customerListModel = new DefaultListModel<>();
         customerList = new JList<>(customerListModel);
         customerList.setFont(fontPlain14);
         customerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        customerList.setFocusable(false);
 
         customerList.addMouseListener(new MouseAdapter() {
             @Override
@@ -363,53 +395,76 @@ public class POSPanel extends JPanel {
             }
         });
 
-        customerList.addKeyListener(new KeyAdapter() {
+        customerSearchTimer = new javax.swing.Timer(300, e -> {
+            if (isCustomerSelecting)
+                return;
+            String query = txtCustomerSearch.getText().trim();
+            if (!query.equals(lastCustomerSearchQuery)) {
+                performCustomerSearch(query);
+                lastCustomerSearchQuery = query;
+            }
+        });
+        customerSearchTimer.setRepeats(false);
+
+        txtCustomerSearch.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    selectCustomerFromList();
+            public void insertUpdate(DocumentEvent e) {
+                customerSearchTimer.restart();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                customerSearchTimer.restart();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                customerSearchTimer.restart();
+            }
+        });
+
+        // Open dropdown on click
+        txtCustomerSearch.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (!customerPopup.isVisible()) {
+                    performCustomerSearch(txtCustomerSearch.getText().trim());
                 }
             }
         });
 
         JScrollPane scroll = new JScrollPane(customerList);
         scroll.setPreferredSize(new Dimension(240, 150));
+        scroll.setFocusable(false);
+        scroll.getVerticalScrollBar().setFocusable(false);
         customerPopup.add(scroll);
-
-        txtCustomerSearch.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateSearch();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateSearch();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateSearch();
-            }
-
-            private void updateSearch() {
-                SwingUtilities.invokeLater(() -> {
-                    String query = txtCustomerSearch.getText().trim();
-                    if (query.isEmpty() || (selectedCustomer != null && query.startsWith(selectedCustomer.name))) {
-                        customerPopup.setVisible(false);
-                        return;
-                    }
-                    performCustomerSearch(query);
-                });
-            }
-        });
 
         txtCustomerSearch.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_DOWN && customerPopup.isVisible()) {
-                    customerList.requestFocus();
-                    customerList.setSelectedIndex(0);
+                if (!customerPopup.isVisible() || customerListModel.isEmpty())
+                    return;
+
+                int index = customerList.getSelectedIndex();
+                int size = customerListModel.getSize();
+
+                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    index = (index + 1) % size;
+                    customerList.setSelectedIndex(index);
+                    customerList.ensureIndexIsVisible(index);
+                    e.consume();
+                } else if (e.getKeyCode() == KeyEvent.VK_UP) {
+                    index = (index - 1 + size) % size;
+                    customerList.setSelectedIndex(index);
+                    customerList.ensureIndexIsVisible(index);
+                    e.consume();
+                } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    if (index != -1) {
+                        selectCustomerFromList();
+                        e.consume();
+                    }
+                } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    customerPopup.setVisible(false);
                 }
             }
         });
@@ -425,24 +480,32 @@ public class POSPanel extends JPanel {
 
     private void performCustomerSearch(String query) {
         currentSearchCustomers = POSService.searchCustomers(query);
-        customerListModel.clear();
-        if (currentSearchCustomers.isEmpty()) {
-            customerPopup.setVisible(false);
-            return;
-        }
 
-        for (POSService.Customer c : currentSearchCustomers) {
-            customerListModel.addElement(c.name + " (" + c.mobile + ")");
-        }
+        SwingUtilities.invokeLater(() -> {
+            customerListModel.clear();
+            if (currentSearchCustomers.isEmpty()) {
+                customerPopup.setVisible(false);
+                return;
+            }
 
-        customerPopup.show(txtCustomerSearch, 0, txtCustomerSearch.getHeight());
-        txtCustomerSearch.requestFocus();
+            for (POSService.Customer c : currentSearchCustomers) {
+                customerListModel.addElement(c.name + " (" + c.mobile + ")");
+            }
+
+            if (!customerPopup.isVisible() && txtCustomerSearch.isShowing()) {
+                customerPopup.show(txtCustomerSearch, 0, txtCustomerSearch.getHeight());
+            }
+        });
     }
 
     private void selectCustomer(POSService.Customer customer) {
+        isCustomerSelecting = true;
         this.selectedCustomer = customer;
-        txtCustomerSearch.setText(customer.name + " (" + customer.mobile + ")");
+        String val = customer.name + " (" + customer.mobile + ")";
+        lastCustomerSearchQuery = val; // Synchronize last query
+        txtCustomerSearch.setText(val);
         txtCustomerSearch.setForeground(headerBlue);
+        isCustomerSelecting = false;
     }
 
     private void addItemToTable(POSService.Item item) {
@@ -523,6 +586,60 @@ public class POSPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Invalid Barcode: " + barcode, "Error", JOptionPane.ERROR_MESSAGE);
             txtBarcode.selectAll();
             txtBarcode.requestFocus();
+        }
+    }
+
+    private void handleManualSync() {
+        if (!com.pos.service.NetworkService.isInternetAvailable()) {
+            JOptionPane.showMessageDialog(this, "Internet connection not available!", "Sync Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        btnSync.setEnabled(false);
+        btnSync.setText("Syncing...");
+
+        new Thread(() -> {
+            try {
+                com.pos.service.SyncService.pushCustomers(); // Call to push customers
+                int syncedCount = com.pos.service.SyncService.pushSales(); // Existing call, renamed variable
+                SwingUtilities.invokeLater(() -> {
+                    btnSync.setEnabled(true);
+                    btnSync.setText("\uD83D\uDCE4 Sync Online"); // New text with emoji
+                    updateSyncStatusCount();
+                    if (syncedCount >= 0) { // New condition for success/failure
+                        JOptionPane.showMessageDialog(this, "Synchronization complete!", "Success",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Synchronization failed. Please check internet connection.",
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> {
+                    btnSync.setEnabled(true);
+                    btnSync.setText("\uD83D\uDCE4 Sync Online"); // New text with emoji
+                    JOptionPane.showMessageDialog(this, "Sync failed: " + e.getMessage(), "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                });
+            }
+        }).start();
+    }
+
+    private void updateSyncStatusCount() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(this::updateSyncStatusCount);
+            return;
+        }
+        try {
+            java.sql.ResultSet rs = model.MySQL.execute("SELECT COUNT(*) FROM `sales` WHERE `is_synced` = 0");
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                lblSyncStatus.setText("Pending Sync: " + count);
+                lblSyncStatus.setForeground(count > 0 ? new Color(198, 40, 40) : new Color(46, 125, 50));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -795,8 +912,15 @@ public class POSPanel extends JPanel {
 
                 String paymentSql = "INSERT INTO `payments` (`sales_id`, `users_id`, `sub_total`, `grand_total`, `paid_amount`, `due_amount`, `discount`, `received_amount`, `change_return_amount`, `payment_type`, `payment_status`) VALUES ("
                         + saleId + ", 1, " + subTotal + ", " + grandTotal + ", " + (received - change) + ", " + due
-                        + ", " + totalDiscount + ", " + received + ", " + change + ", '" + type + "', 'PAID')";
+                        + ", " + totalDiscount + ", " + received + ", " + change + ", '" + type + "', '"
+                        + (due > 0 ? "DUE" : "PAID") + "')";
                 model.MySQL.execute(paymentSql);
+
+                // Update Customer due_amount if applicable
+                if (customerId != 0 && due > 0) {
+                    model.MySQL.execute("UPDATE `customers` SET `due_amount` = `due_amount` + " + due
+                            + ", `is_synced` = 0 WHERE `id` = " + customerId);
+                }
 
                 for (int i = 0; i < tableModel.getRowCount(); i++) {
                     String itemName = tableModel.getValueAt(i, 0).toString();
@@ -853,10 +977,21 @@ public class POSPanel extends JPanel {
                     JOptionPane.INFORMATION_MESSAGE);
             tableModel.setRowCount(0);
             updateSummary();
-            updateHoldCount();
+            updateSyncStatusCount();
             selectedCustomer = null;
+            updateHoldCount();
             txtCustomerSearch.setText("Search Customer...");
             txtCustomerSearch.setForeground(Color.GRAY);
+
+            // Trigger instant sale sync in background
+            new Thread(() -> {
+                try {
+                    com.pos.service.SyncService.pushSales();
+                    SwingUtilities.invokeLater(() -> updateSyncStatusCount());
+                } catch (Exception exSync) {
+                    System.err.println("Sale background sync error: " + exSync.getMessage());
+                }
+            }).start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1040,6 +1175,7 @@ public class POSPanel extends JPanel {
             tableModel.setRowCount(0);
             updateSummary();
             updateHoldCount();
+            updateSyncStatusCount();
             selectedCustomer = null;
             txtCustomerSearch.setText("Search Customer...");
             txtCustomerSearch.setForeground(Color.GRAY);
@@ -1195,6 +1331,176 @@ public class POSPanel extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void showPendingSyncDialog() {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Pending Sync Sales", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(600, 400);
+        dialog.setLocationRelativeTo(this);
+
+        String[] headers = { "ID", "Sales Code", "Customer ID", "Amount" };
+        DefaultTableModel modelSync = new DefaultTableModel(headers, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        JTable tableSync = new JTable(modelSync);
+        tableSync.setRowHeight(30);
+
+        try {
+            java.sql.ResultSet rs = model.MySQL.execute(
+                    "SELECT s.id, s.sales_code, s.customers_id, p.grand_total FROM sales s JOIN payments p ON s.id = p.sales_id WHERE s.is_synced = 0");
+            while (rs.next()) {
+                modelSync.addRow(new Object[] {
+                        rs.getInt("id"),
+                        rs.getString("sales_code"),
+                        rs.getInt("customers_id"),
+                        String.format("%.2f", rs.getDouble("grand_total"))
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        dialog.add(new JScrollPane(tableSync), BorderLayout.CENTER);
+
+        JButton btnClose = new JButton("Close");
+        btnClose.addActionListener(e -> dialog.dispose());
+        JPanel pnlSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        pnlSouth.add(btnClose);
+        dialog.add(pnlSouth, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
+    private void showAddCustomerDialog() {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Add Customer", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(600, 450);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel pnlForm = new JPanel(new GridBagLayout());
+        pnlForm.setBorder(new EmptyBorder(20, 20, 20, 20));
+        pnlForm.setBackground(Color.WHITE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 10, 10, 10);
+
+        JTextField txtName = new JTextField();
+        JTextField txtMobile = new JTextField();
+        JTextField txtEmail = new JTextField();
+        JTextField txtCity = new JTextField();
+        JTextArea txtAddress = new JTextArea(3, 20);
+        txtAddress.setBorder(new LineBorder(Color.LIGHT_GRAY));
+        JTextField txtDue = new JTextField("0.00");
+
+        int row = 0;
+        addLabelValue(pnlForm, "Customer Name:", txtName, gbc, row++);
+        addLabelValue(pnlForm, "Mobile Number:", txtMobile, gbc, row++);
+        addLabelValue(pnlForm, "Email:", txtEmail, gbc, row++);
+        addLabelValue(pnlForm, "City:", txtCity, gbc, row++);
+        addLabelValue(pnlForm, "Address Line:", new JScrollPane(txtAddress), gbc, row++);
+        addLabelValue(pnlForm, "Due Amount:", txtDue, gbc, row++);
+
+        JPanel pnlBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        pnlBtns.setBackground(new Color(245, 245, 245));
+        pnlBtns.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JButton btnSave = new JButton("Save");
+        btnSave.setBackground(headerBlue);
+        btnSave.setForeground(Color.WHITE);
+        btnSave.setPreferredSize(new Dimension(100, 35));
+
+        JButton btnCancel = new JButton("Cancel");
+        btnCancel.setPreferredSize(new Dimension(100, 35));
+
+        btnSave.addActionListener(e -> {
+            String name = txtName.getText().trim();
+            String mobile = txtMobile.getText().trim();
+            String emailStr = txtEmail.getText().trim();
+            String cityStr = txtCity.getText().trim();
+            String addressStr = txtAddress.getText().trim();
+            String dueStr = txtDue.getText().trim();
+
+            if (name.isEmpty() || mobile.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Name and Mobile are required!", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                // Final safety check for columns
+                String[] columns = { "email", "city_name", "address_line_1", "due_amount", "is_synced", "customer_code",
+                        "created_by_user_id", "pos_system_id" };
+                for (String col : columns) {
+                    try {
+                        String columnType = "VARCHAR(255)";
+                        if (col.equals("address_line_1"))
+                            columnType = "TEXT";
+                        else if (col.equals("is_synced"))
+                            columnType = "TINYINT(1) DEFAULT 0";
+                        else if (col.equals("created_by_user_id"))
+                            columnType = "INT";
+                        else if (col.equals("due_amount"))
+                            columnType = "DOUBLE DEFAULT 0";
+                        else if (col.equals("customer_code"))
+                            columnType = "VARCHAR(255) UNIQUE";
+                        else if (col.equals("pos_system_id"))
+                            columnType = "VARCHAR(255)";
+
+                        model.MySQL.execute("ALTER TABLE `customers` ADD COLUMN `" + col + "` " + columnType);
+                    } catch (Exception ex) {
+                        // Ignore if already exists
+                    }
+                }
+
+                String customerCode = "SOU-" + System.currentTimeMillis();
+                String posId = com.pos.service.ConfigService.getPosSystemId();
+                int userId = com.pos.service.SyncService.getCurrentUserId();
+
+                System.out.println("Saving customer with User ID: " + userId + " and POS ID: " + posId);
+
+                String sql = "INSERT INTO `customers` (`customer_name`, `contact_number`, `email`, `city_name`, `address_line_1`, `due_amount`, `is_synced`, `customer_code`, `created_by_user_id`, `pos_system_id`) VALUES ("
+                        + "'" + name.replace("'", "''") + "', "
+                        + "'" + mobile.replace("'", "''") + "', "
+                        + (emailStr.isEmpty() ? "NULL" : "'" + emailStr.replace("'", "''") + "'") + ", "
+                        + (cityStr.isEmpty() ? "NULL" : "'" + cityStr.replace("'", "''") + "'") + ", "
+                        + (addressStr.isEmpty() ? "NULL" : "'" + addressStr.replace("'", "''") + "'") + ", "
+                        + (dueStr.isEmpty() ? "0.0" : dueStr) + ", 0, '" + customerCode + "', " + userId + ", '" + posId
+                        + "')";
+                model.MySQL.execute(sql);
+
+                // Instant sync if connected
+                new Thread(() -> {
+                    try {
+                        if (com.pos.service.NetworkService.isInternetAvailable()) {
+                            com.pos.service.SyncService.pushCustomers();
+                        }
+                    } catch (Exception exSync) {
+                        exSync.printStackTrace();
+                    }
+                }).start();
+
+                JOptionPane.showMessageDialog(dialog, "Customer saved successfully!", "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+                dialog.dispose();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(dialog, "Error saving customer: " + ex.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnCancel.addActionListener(e -> dialog.dispose());
+
+        pnlBtns.add(btnSave);
+        pnlBtns.add(btnCancel);
+
+        dialog.add(pnlForm, BorderLayout.CENTER);
+        dialog.add(pnlBtns, BorderLayout.SOUTH);
+        dialog.setVisible(true);
     }
 
     private JButton createActionBtn(String text, Color bg, int width) {

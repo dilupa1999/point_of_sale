@@ -40,8 +40,9 @@ public class POSService {
     public static List<Item> searchItems(String query) {
         List<Item> items = new ArrayList<>();
         try {
-            String sql = "SELECT * FROM `items` WHERE `item_name` LIKE '%" + query + "%' OR `item_code` LIKE '%" + query
-                    + "%' OR `barcode` LIKE '%" + query + "%'";
+            String sql = "SELECT * FROM `items` WHERE LOWER(`item_name`) LIKE LOWER('%" + query
+                    + "%') OR LOWER(`item_code`) LIKE LOWER('%" + query
+                    + "%') OR LOWER(`barcode`) LIKE LOWER('%" + query + "%')";
             ResultSet rs = MySQL.execute(sql);
             while (rs.next()) {
                 items.add(new Item(
@@ -80,8 +81,8 @@ public class POSService {
     public static List<Customer> searchCustomers(String query) {
         List<Customer> customers = new ArrayList<>();
         try {
-            String sql = "SELECT * FROM `customers` WHERE `customer_name` LIKE '%" + query
-                    + "%' OR `contact_number` LIKE '%" + query + "%'";
+            String sql = "SELECT * FROM `customers` WHERE LOWER(`customer_name`) LIKE LOWER('%" + query
+                    + "%') OR `contact_number` LIKE '%" + query + "%'";
             ResultSet rs = MySQL.execute(sql);
             while (rs.next()) {
                 customers.add(new Customer(
