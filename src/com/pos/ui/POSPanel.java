@@ -309,6 +309,30 @@ public class POSPanel extends JPanel {
         JButton btnCancel = createActionBtn("\u2298 Cancel", dangerRed, 160);
 
         btnPay.addActionListener(e -> showPaymentDialog());
+
+        // Ensure the button can be triggered by pressing Enter when focused
+        btnPay.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    btnPay.doClick();
+                }
+            }
+        });
+
+        // Add a global shortcut so pressing Enter anywhere without another input
+        // consuming it triggers Pay All
+        this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "payAllGlobal");
+        this.getActionMap().put("payAllGlobal", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (txtCustomerSearch.hasFocus() || txtRightSearch.hasFocus())
+                    return;
+                btnPay.doClick();
+            }
+        });
+
         btnCancel.addActionListener(e -> {
             if (JOptionPane.showConfirmDialog(this, "Clear current bill?", "Cancel Bill",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -572,6 +596,7 @@ public class POSPanel extends JPanel {
     private void handleBarcodeScan() {
         String barcode = txtBarcode.getText().trim();
         if (barcode.isEmpty() || barcode.equals("Enter a valid barcode")) {
+            showPaymentDialog();
             return;
         }
 
@@ -819,6 +844,19 @@ public class POSPanel extends JPanel {
         pnlSouth.setBackground(Color.WHITE);
         JButton btnPay = createActionBtn("Pay", headerBlue, 150);
         JButton btnCancel = createActionBtn("Cancel", dangerRed, 150);
+
+        // Make Enter key anywhere trigger the Payment form's main button
+        dialog.getRootPane().setDefaultButton(btnPay);
+
+        // Let it also respond when specifically focused
+        btnPay.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    btnPay.doClick();
+                }
+            }
+        });
 
         btnPay.addActionListener(e -> {
             try {
