@@ -21,7 +21,7 @@ public class ItemsPanel extends JPanel {
     }
 
     private void initComponents(MainFrame mainFrame) {
-        // --- Top Header (Blue) ---
+        // --- Top Header (Blue) 
         JPanel pnlTopHeader = new JPanel(new BorderLayout());
         pnlTopHeader.setBackground(primaryBlue);
         pnlTopHeader.setPreferredSize(new Dimension(0, 70));
