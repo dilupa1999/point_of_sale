@@ -22,7 +22,7 @@ public class MySQL {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             //connection = DriverManager.getConnection("jdbc:mysql://source1solutiondb.covzsreencd7.us-east-2.rds.amazonaws.com:3306/source_1_solutions_db", "sobasramdyal", "SobasRamdyal$$SOS$");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/hypermart_local", "root", "Ravindu0627@");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/hypermart_local", "root", " M#1ta7LK#5n");
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
