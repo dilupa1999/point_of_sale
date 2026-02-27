@@ -31,6 +31,7 @@ public class ConfigService {
         }
 
         props.setProperty("pos_system_id", "POS-" + computerName.toUpperCase());
+        props.setProperty("printer_name", "DEFAULT");
         try (OutputStream output = new FileOutputStream(CONFIG_FILE)) {
             props.store(output, "POS System Configuration");
         } catch (IOException io) {
@@ -40,5 +41,9 @@ public class ConfigService {
 
     public static String getPosSystemId() {
         return props.getProperty("pos_system_id", "POS-UNKNOWN");
+    }
+
+    public static String getPrinterName() {
+        return props.getProperty("printer_name", "DEFAULT");
     }
 }

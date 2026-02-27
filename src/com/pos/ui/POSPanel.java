@@ -934,12 +934,18 @@ public class POSPanel extends JPanel {
                 model.MySQL.execute("ALTER TABLE `sales` ADD COLUMN `commission` DECIMAL(14,2) DEFAULT 0.00");
             } catch (Exception ex) {
             }
+            try {
+                model.MySQL.execute("ALTER TABLE `sales` ADD COLUMN `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+                model.MySQL
+                        .execute("ALTER TABLE `payments` ADD COLUMN `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+            } catch (Exception ex) {
+            }
 
             // Insert into sales table
-            String sql = "INSERT INTO `sales` (`sales_code`, `customers_id`, `users_id`, `pos_system_id`, `warranty_period`, `warranty_card_no`, `notes`, `commission`, `is_synced`) VALUES ("
+            String sql = "INSERT INTO `sales` (`sales_code`, `customers_id`, `users_id`, `pos_system_id`, `warranty_period`, `warranty_card_no`, `notes`, `commission`, `is_synced`, `created_at`) VALUES ("
                     + "'" + salesCode + "', " + (customerId == 0 ? "NULL" : customerId) + ", 1, '"
                     + ConfigService.getPosSystemId() + "', '', '', '" + notes.replace("'", "''") + "', " + commission
-                    + ", 0)";
+                    + ", 0, CURRENT_TIMESTAMP)";
             model.MySQL.execute(sql);
 
             java.sql.ResultSet rs = model.MySQL.execute("SELECT LAST_INSERT_ID()");
@@ -948,10 +954,10 @@ public class POSPanel extends JPanel {
                 double subTotal = Double.parseDouble(lblTotalAmount.getText().replace("Total Amount: Rs. ", ""));
                 double due = Math.max(0, grandTotal - received);
 
-                String paymentSql = "INSERT INTO `payments` (`sales_id`, `users_id`, `sub_total`, `grand_total`, `paid_amount`, `due_amount`, `discount`, `received_amount`, `change_return_amount`, `payment_type`, `payment_status`) VALUES ("
+                String paymentSql = "INSERT INTO `payments` (`sales_id`, `users_id`, `sub_total`, `grand_total`, `paid_amount`, `due_amount`, `discount`, `received_amount`, `change_return_amount`, `payment_type`, `payment_status`, `created_at`) VALUES ("
                         + saleId + ", 1, " + subTotal + ", " + grandTotal + ", " + (received - change) + ", " + due
                         + ", " + totalDiscount + ", " + received + ", " + change + ", '" + type + "', '"
-                        + (due > 0 ? "DUE" : "PAID") + "')";
+                        + (due > 0 ? "DUE" : "PAID") + "', CURRENT_TIMESTAMP)";
                 model.MySQL.execute(paymentSql);
 
                 // Update Customer due_amount if applicable
@@ -971,6 +977,10 @@ public class POSPanel extends JPanel {
                         model.MySQL.execute(
                                 "INSERT INTO `sales_items` (`sales_id`, `items_id`, `quantity`, `price`, `discount`, `discount_type`) VALUES ("
                                         + saleId + ", " + itemId + ", " + qty + ", " + price + ", 0, 'FIXED')");
+
+                        // Immediately deduct stock locally
+                        model.MySQL.execute("UPDATE `items` SET `quantity` = IF(`quantity` >= " + qty
+                                + ", `quantity` - " + qty + ", 0) WHERE `id` = " + itemId);
                     }
                 }
 
@@ -1178,21 +1188,29 @@ public class POSPanel extends JPanel {
                         .execute("ALTER TABLE `sales` ADD COLUMN `hold_ref_name` VARCHAR(255) AFTER `pos_system_id`");
             } catch (Exception ex) {
             }
+            try {
+                model.MySQL.execute("ALTER TABLE `sales` ADD COLUMN `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+                model.MySQL
+                        .execute("ALTER TABLE `payments` ADD COLUMN `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+            } catch (Exception ex) {
+            }
 
             double total = Double.parseDouble(lblTotalAmount.getText().replace("Total Amount: Rs. ", ""));
             int customerId = (selectedCustomer != null) ? selectedCustomer.id : 0;
             String salesCode = "HOLD-" + System.currentTimeMillis();
 
-            String sql = "INSERT INTO `sales` (`sales_code`, `customers_id`, `users_id`, `pos_system_id`, `hold_ref_name`, `warranty_period`, `warranty_card_no`, `is_synced`) VALUES ("
+            String sql = "INSERT INTO `sales` (`sales_code`, `customers_id`, `users_id`, `pos_system_id`, `hold_ref_name`, `warranty_period`, `warranty_card_no`, `is_synced`, `created_at`) VALUES ("
                     + "'" + salesCode + "', " + (customerId == 0 ? "NULL" : customerId) + ", 1, '"
-                    + ConfigService.getPosSystemId() + "', '" + refName.replace("'", "''") + "', '', '', 0)";
+                    + ConfigService.getPosSystemId() + "', '" + refName.replace("'", "''")
+                    + "', '', '', 0, CURRENT_TIMESTAMP)";
             model.MySQL.execute(sql);
 
             java.sql.ResultSet rs = model.MySQL.execute("SELECT LAST_INSERT_ID()");
             if (rs.next()) {
                 int saleId = rs.getInt(1);
-                String paymentSql = "INSERT INTO `payments` (`sales_id`, `users_id`, `sub_total`, `grand_total`, `paid_amount`, `due_amount`, `discount`, `received_amount`, `change_return_amount`, `payment_status`) VALUES ("
-                        + saleId + ", 1, " + total + ", " + total + ", 0, " + total + ", 0, 0, 0, 'HOLD')";
+                String paymentSql = "INSERT INTO `payments` (`sales_id`, `users_id`, `sub_total`, `grand_total`, `paid_amount`, `due_amount`, `discount`, `received_amount`, `change_return_amount`, `payment_status`, `created_at`) VALUES ("
+                        + saleId + ", 1, " + total + ", " + total + ", 0, " + total
+                        + ", 0, 0, 0, 'HOLD', CURRENT_TIMESTAMP)";
                 model.MySQL.execute(paymentSql);
 
                 for (int i = 0; i < tableModel.getRowCount(); i++) {
