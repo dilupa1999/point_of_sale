@@ -26,7 +26,8 @@ public class SalesListPanel extends JPanel {
     private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color actionBlue = new Color(25, 118, 210);
     private final Color secondaryBlue = new Color(21, 101, 192);
-    private final Color dueBadgeBg = new Color(232, 245, 233); // Keeping a slight green for due might be okay, but user said blue theme.
+    private final Color dueBadgeBg = new Color(232, 245, 233); // Keeping a slight green for due might be okay, but user
+                                                               // said blue theme.
     // Changing DUE badge to blue/gray for theme consistency
     private final Color dueBadgeBgBlue = new Color(235, 241, 250);
     private final Color dueBadgeFgBlue = new Color(25, 118, 210);
@@ -569,6 +570,17 @@ public class SalesListPanel extends JPanel {
         btnCancel.setBorder(null);
 
         btnCancel.addActionListener(e -> dialog.dispose());
+
+        // Make Enter key trigger the submit button
+        dialog.getRootPane().setDefaultButton(btnSubmit);
+        txtAmount.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    btnSubmit.doClick();
+                }
+            }
+        });
 
         btnSubmit.addActionListener(e -> {
             String input = txtAmount.getText();

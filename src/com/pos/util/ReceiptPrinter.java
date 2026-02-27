@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.print.*;
 import java.util.List;
 import java.util.Map;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
 
 public class ReceiptPrinter implements Printable {
 
@@ -16,15 +18,56 @@ public class ReceiptPrinter implements Printable {
     public static void printReceipt(Map<String, Object> saleData) {
         PrinterJob job = PrinterJob.getPrinterJob();
         job.setPrintable(new ReceiptPrinter(saleData));
-        try {
-            // job.print(); // Uncomment this for real printing
-            // For testing/demonstration, we might want to show a dialog or similar
-            // But the user asked to "Do that" so we should aim for direct printing if
-            // possible
-            // or at least have the logic ready.
-            if (job.printDialog()) {
-                job.print();
+
+        // Get printer name from Config Service
+        String targetPrinterName = com.pos.service.ConfigService.getPrinterName();
+        boolean printerFound = false;
+
+        if (targetPrinterName != null && !targetPrinterName.isEmpty() && !targetPrinterName.equals("DEFAULT")) {
+            PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null);
+            for (PrintService printer : printServices) {
+                if (printer.getName().equalsIgnoreCase(targetPrinterName)) {
+                    try {
+                        job.setPrintService(printer);
+                        printerFound = true;
+                        System.out.println("Using configured printer: " + targetPrinterName);
+                        break;
+                    } catch (PrinterException e) {
+                        System.err.println("Could not set the configured printer. Falling back to default.");
+                    }
+                }
             }
+        }
+
+        if (!printerFound && !targetPrinterName.equals("DEFAULT")) {
+            System.err.println("Configured printer '" + targetPrinterName
+                    + "' not found. Searching for generic receipt printers...");
+            PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null);
+            for (PrintService printer : printServices) {
+                String pName = printer.getName().toLowerCase();
+                if (pName.contains("receipt") || pName.contains("pos") || pName.contains("58") || pName.contains("80")
+                        || pName.contains("thermal")) {
+                    try {
+                        job.setPrintService(printer);
+                        System.out.println("Auto-selected fallback receipt printer: " + printer.getName());
+                        printerFound = true;
+                        break;
+                    } catch (PrinterException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        if (!printerFound) {
+            System.out.println("Using OS default printer.");
+        }
+
+        try {
+            // Directly print to the set OS default printer without showing dialog
+            job.print();
+        } catch (java.awt.print.PrinterAbortException e) {
+            System.err.println("Print job was aborted or no valid printer found. Skipping print.");
         } catch (PrinterException ex) {
             ex.printStackTrace();
         }

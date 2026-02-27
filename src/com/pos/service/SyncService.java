@@ -268,6 +268,14 @@ public class SyncService {
                 saleObj.addProperty("warranty_card_no", rs.getString("warranty_card_no"));
                 saleObj.addProperty("pos_system_id", rs.getString("pos_system_id"));
 
+                try {
+                    String createdAt = rs.getString("created_at");
+                    if (createdAt != null && !createdAt.isEmpty()) {
+                        saleObj.addProperty("created_at", createdAt);
+                    }
+                } catch (Exception ex) {
+                }
+
                 JsonArray itemsArr = new JsonArray();
                 String itemSql = "SELECT * FROM `sales_items` WHERE `sales_id` = " + saleId;
                 java.sql.ResultSet rsItems = MySQL.execute(itemSql);
