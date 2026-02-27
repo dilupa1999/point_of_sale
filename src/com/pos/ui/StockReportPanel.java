@@ -12,10 +12,10 @@ public class StockReportPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color headerBlue = new Color(30, 136, 229);
-    private final Color actionGreen = new Color(139, 195, 74);
+    private final Color actionBlue = new Color(25, 118, 210);
     private final Color resetBlack = new Color(33, 33, 33);
     private final Color fieldBg = new Color(245, 245, 250);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -39,14 +39,10 @@ public class StockReportPanel extends JPanel {
         JButton btnBack = createHeaderButton("<", true);
         btnBack.addActionListener(e -> mainFrame.showPanel("Reports"));
 
-        JButton btnMainPanel = createHeaderButton("Go to Main Panel", false);
-        btnMainPanel.addActionListener(e -> mainFrame.showPanel("Dashboard"));
-
         JButton btnPOS = createHeaderButton("POS", false);
         btnPOS.addActionListener(e -> mainFrame.showPanel("POS"));
 
         pnlTopLeft.add(btnBack);
-        pnlTopLeft.add(btnMainPanel);
         pnlTopLeft.add(btnPOS);
         pnlTopHeader.add(pnlTopLeft, BorderLayout.WEST);
 
@@ -132,7 +128,7 @@ public class StockReportPanel extends JPanel {
         // Buttons
         gbc.weightx = 0;
         gbc.gridx = 4;
-        JButton btnSubmit = createMiniButton("Submit", actionGreen);
+        JButton btnSubmit = createMiniButton("Submit", actionBlue);
         btnSubmit.setPreferredSize(new Dimension(100, 45));
         pnlFilters.add(btnSubmit, gbc);
 
@@ -169,7 +165,7 @@ public class StockReportPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(tableHeaderGreen); // Green header as per web screenshot
+                lbl.setBackground(tableHeaderBlue); // Blue header as per user request
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);

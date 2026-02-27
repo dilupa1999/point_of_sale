@@ -8,7 +8,7 @@ import java.awt.*;
 public class AddItemsPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color vibrantGreen = new Color(0, 200, 83);
+    private final Color actionBlue = new Color(25, 118, 210);
     private final Color headerBg = primaryBlue;
     private final Color fieldBg = new Color(245, 245, 250);
     private final Font fontBold14 = new Font("Segoe UI", Font.BOLD, 14);
@@ -62,13 +62,8 @@ public class AddItemsPanel extends JPanel {
         JLabel lblWelcome = new JLabel("<html><div style='text-align: right;'><span style='font-size: 16px; font-weight: bold;'>Good Evening!</span><br>Welcome Pos System</div></html>");
         lblWelcome.setForeground(Color.WHITE);
         
-        JButton btnPower = new JButton("\u23FB"); // Power icon
-        btnPower.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        btnPower.setForeground(Color.BLACK);
-        btnPower.setBackground(Color.WHITE);
-        btnPower.setPreferredSize(new Dimension(40, 40));
-        btnPower.setFocusPainted(false);
-        btnPower.setBorder(null);
+        JButton btnPower = createHeaderButton("\u23FB", true);
+        btnPower.setFont(new Font("Segoe UI", Font.BOLD, 22));
 
         pnlTopRight.add(lblWelcome);
         pnlTopRight.add(btnPower);
@@ -153,7 +148,7 @@ public class AddItemsPanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = 4;
         gbc.gridwidth = 5;
         gbc.weightx = 1.0;
-        gbc.weighty = 1.0; // Fill remaining space
+        gbc.weighty = 0.5;
         gbc.fill = GridBagConstraints.BOTH;
         
         JPanel pnlDesc = new JPanel(new BorderLayout(0, 5));
@@ -168,6 +163,50 @@ public class AddItemsPanel extends JPanel {
         pnlDesc.add(new JScrollPane(txtDesc), BorderLayout.CENTER);
         
         pnlForm.add(pnlDesc, gbc);
+
+        // Row 5: Add Image Section
+        gbc.gridx = 0; gbc.gridy = 5;
+        gbc.gridwidth = 5;
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(30, 0, 10, 0);
+
+        JPanel pnlImageContainer = new JPanel();
+        pnlImageContainer.setLayout(new BoxLayout(pnlImageContainer, BoxLayout.Y_AXIS));
+        pnlImageContainer.setOpaque(false);
+
+        JLabel lblAddImage = new JLabel("Add image");
+        lblAddImage.setFont(fontPlain12);
+        lblAddImage.setForeground(Color.DARK_GRAY);
+        lblAddImage.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton btnSelectImage = new JButton("Select image");
+        btnSelectImage.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnSelectImage.setBackground(Color.WHITE);
+        btnSelectImage.setBorder(new LineBorder(new Color(200, 200, 205)));
+        btnSelectImage.setPreferredSize(new Dimension(140, 40));
+        btnSelectImage.setFocusPainted(false);
+        btnSelectImage.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        pnlImageContainer.add(lblAddImage);
+        pnlImageContainer.add(Box.createVerticalStrut(10));
+        pnlImageContainer.add(btnSelectImage);
+        pnlForm.add(pnlImageContainer, gbc);
+
+        // Row 6: Action Buttons (Save/Reset)
+        gbc.gridx = 0; gbc.gridy = 6;
+        gbc.insets = new Insets(40, 0, 40, 0);
+        
+        JPanel pnlFinalButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+        pnlFinalButtons.setOpaque(false);
+
+        JButton btnSave = createActionButton("Save", new Color(13, 71, 161)); // Styled Green
+        JButton btnReset = createActionButton("Reset", new Color(13, 71, 161)); // Styled Lighter Green from mockup
+        
+        pnlFinalButtons.add(btnSave);
+        pnlFinalButtons.add(btnReset);
+        pnlForm.add(pnlFinalButtons, gbc);
 
         pnlFormScrollContainer.add(pnlForm, BorderLayout.CENTER);
         
@@ -213,6 +252,28 @@ public class AddItemsPanel extends JPanel {
         fieldPanel.add(component, BorderLayout.CENTER);
 
         panel.add(fieldPanel, gbc);
+    }
+
+    private JButton createActionButton(String text, Color bg) {
+        JButton btn = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+        };
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(bg);
+        btn.setPreferredSize(new Dimension(140, 45));
+        btn.setFocusPainted(false);
+        btn.setBorder(null);
+        btn.setContentAreaFilled(false);
+        return btn;
     }
 
     private JButton createHeaderButton(String text, boolean isCircle) {

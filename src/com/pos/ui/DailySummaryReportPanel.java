@@ -8,10 +8,10 @@ import java.awt.*;
 public class DailySummaryReportPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color actionGreen = new Color(139, 195, 74);
+    private final Color actionBlue = new Color(25, 118, 210);
     private final Color resetBlack = new Color(33, 33, 33);
     private final Color fieldBg = new Color(245, 245, 250);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
 
     public DailySummaryReportPanel(MainFrame mainFrame) {
         setLayout(new BorderLayout());
@@ -97,7 +97,7 @@ public class DailySummaryReportPanel extends JPanel {
         pnlFilters.add(createFilterPanel("Category", new JComboBox<>(new String[]{"All Categories"}), 180));
         pnlFilters.add(createFilterPanel("Item", new JTextField("All Items"), 250));
         
-        JButton btnFilter = createMiniButton("Filter", actionGreen);
+        JButton btnFilter = createMiniButton("Filter", actionBlue);
         btnFilter.setPreferredSize(new Dimension(80, 40));
         pnlFilters.add(btnFilter);
 
@@ -137,7 +137,7 @@ public class DailySummaryReportPanel extends JPanel {
         pnlTableContainer.setBorder(new EmptyBorder(20, 0, 0, 0));
 
         JPanel pnlTableHeader = new JPanel(new GridLayout(1, 0));
-        pnlTableHeader.setBackground(tableHeaderGreen);
+        pnlTableHeader.setBackground(tableHeaderBlue);
         pnlTableHeader.setPreferredSize(new Dimension(0, 45));
         String[] cols = {"NO", "ITEM NAME", "CATEGORY", "UNIT", "QTY SOLD", "QTY RETURNED", "NET QTY", "TOTAL COST", "GROSS REVENUE", "TOTAL DISCOUNT", "RETURNS", "NET REVENUE", "NET PROFIT", "PROFIT %"};
         for (String col : cols) {

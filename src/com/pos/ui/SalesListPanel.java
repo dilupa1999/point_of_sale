@@ -23,13 +23,13 @@ public class SalesListPanel extends JPanel {
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color filterBlue = new Color(13, 71, 161);
     private final Color clearGray = new Color(120, 144, 156);
-    private final Color tableHeaderBlue = new Color(30, 136, 229);
-    private final Color paidBadgeBg = new Color(225, 245, 254);
-    private final Color paidBadgeFg = new Color(1, 87, 155);
-    private final Color dueBadgeBg = new Color(224, 242, 241);
-    private final Color dueBadgeFg = new Color(0, 121, 107);
-    private final Color actionBlue = new Color(3, 169, 244);
-    private final Color actionGreen = new Color(67, 160, 71);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color secondaryBlue = new Color(21, 101, 192);
+    private final Color dueBadgeBg = new Color(232, 245, 233); // Keeping a slight green for due might be okay, but user said blue theme.
+    // Changing DUE badge to blue/gray for theme consistency
+    private final Color dueBadgeBgBlue = new Color(235, 241, 250);
+    private final Color dueBadgeFgBlue = new Color(25, 118, 210);
 
     private final Color topHeaderBlue = new Color(13, 71, 161);
 
@@ -995,11 +995,11 @@ public class SalesListPanel extends JPanel {
             lbl.setBorder(new EmptyBorder(5, 15, 5, 15));
 
             if ("PAID".equals(status)) {
-                lbl.setBackground(paidBadgeBg);
-                lbl.setForeground(paidBadgeFg);
+                lbl.setBackground(new Color(225, 245, 254));
+                lbl.setForeground(new Color(1, 87, 155));
             } else {
-                lbl.setBackground(dueBadgeBg);
-                lbl.setForeground(dueBadgeFg);
+                lbl.setBackground(dueBadgeBgBlue);
+                lbl.setForeground(dueBadgeFgBlue);
             }
 
             p.add(lbl);
@@ -1061,12 +1061,12 @@ public class SalesListPanel extends JPanel {
 
             if ("DUE".equals(status)) {
                 JButton btnPay = new JButton("Pay");
-                styleActionButton(btnPay, actionGreen);
+                styleActionButton(btnPay, actionBlue);
                 p.add(btnPay);
             }
 
             JButton btnMore = new JButton("MORE");
-            styleActionButton(btnMore, actionBlue);
+            styleActionButton(btnMore, secondaryBlue);
             p.add(btnMore);
 
             btnMore.addActionListener(e -> {

@@ -11,10 +11,10 @@ import java.awt.*;
 public class LoyaltyPointReportPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color actionGreen = new Color(139, 195, 74);
+    private final Color actionBlue = new Color(25, 118, 210);
     private final Color resetBlack = new Color(33, 33, 33);
     private final Color fieldBg = new Color(245, 245, 250);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -98,7 +98,7 @@ public class LoyaltyPointReportPanel extends JPanel {
         pnlFilters.add(createFilterPanel("From Date", "mm/dd/yyyy"));
         pnlFilters.add(createFilterPanel("To Date", "mm/dd/yyyy"));
 
-        JButton btnSubmit = createMiniButton("Submit", actionGreen);
+        JButton btnSubmit = createMiniButton("Submit", actionBlue);
         btnSubmit.setPreferredSize(new Dimension(100, 40));
         pnlFilters.add(btnSubmit);
 
@@ -134,7 +134,7 @@ public class LoyaltyPointReportPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(tableHeaderGreen);
+                lbl.setBackground(tableHeaderBlue);
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);

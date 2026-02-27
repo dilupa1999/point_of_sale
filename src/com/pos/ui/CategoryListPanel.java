@@ -11,8 +11,8 @@ import java.awt.*;
 public class CategoryListPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color vibrantGreen = new Color(0, 200, 83);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color headerBg = primaryBlue;
 
     private JTable table;
@@ -89,7 +89,7 @@ public class CategoryListPanel extends JPanel {
         lblBreadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         pnlTopActions.add(lblBreadcrumb, BorderLayout.WEST);
 
-        JButton btnColVisibility = createActionButton("Column Visibility", tableHeaderGreen);
+        JButton btnColVisibility = createActionButton("Column Visibility", tableHeaderBlue);
         btnColVisibility.setPreferredSize(new Dimension(150, 35));
         pnlTopActions.add(btnColVisibility, BorderLayout.EAST);
 
@@ -108,7 +108,7 @@ public class CategoryListPanel extends JPanel {
         txtSearch.setPreferredSize(new Dimension(0, 35));
         txtSearch.setForeground(Color.GRAY);
         pnlSearch.add(txtSearch);
-        pnlSearch.add(createActionButton("Search", vibrantGreen));
+        pnlSearch.add(createActionButton("Search", actionBlue));
         pnlFilters.add(pnlSearch, BorderLayout.WEST);
 
         // Center: Entries
@@ -148,7 +148,7 @@ public class CategoryListPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(tableHeaderGreen);
+                lbl.setBackground(tableHeaderBlue);
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);

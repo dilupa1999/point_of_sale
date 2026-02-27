@@ -8,8 +8,8 @@ import java.awt.*;
 public class AddCategoryPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color vibrantGreen = new Color(0, 200, 83);
-    private final Color btnResetGray = new Color(80, 80, 85);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color headerBg = primaryBlue;
     private final Color fieldBg = new Color(245, 245, 250);
     private final Font fontBold14 = new Font("Segoe UI", Font.BOLD, 14);
@@ -138,8 +138,8 @@ public class AddCategoryPanel extends JPanel {
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         pnlButtons.setOpaque(false);
         
-        JButton btnSave = createActionButton("Save", vibrantGreen);
-        JButton btnReset = createActionButton("Reset", btnResetGray);
+        JButton btnSave = createActionButton("Save", actionBlue);
+        JButton btnReset = createActionButton("Reset", tableHeaderBlue);
         
         pnlButtons.add(btnSave);
         pnlButtons.add(btnReset);

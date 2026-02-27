@@ -13,9 +13,9 @@ public class ReturnsListPanel extends JPanel {
     private final Color primaryBlue = new Color(13, 71, 161);
     private final Color filterBlue = new Color(13, 71, 161);
     private final Color clearGray = new Color(120, 144, 156);
-    private final Color tableHeaderBlue = new Color(30, 136, 229);
-    private final Color processedBadgeBg = new Color(232, 245, 233);
-    private final Color processedBadgeFg = new Color(56, 142, 60);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
+    private final Color processedBadgeBg = new Color(225, 245, 254);
+    private final Color processedBadgeFg = new Color(1, 87, 155);
 
     private JTable table;
     private DefaultTableModel tableModel;

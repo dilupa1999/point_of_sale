@@ -8,8 +8,8 @@ import java.awt.*;
 public class AddRolePanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color vibrantGreen = new Color(0, 200, 83);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color cancelRed = new Color(211, 47, 47);
     private final Color fieldBg = new Color(245, 245, 250);
     private final Font fontBold14 = new Font("Segoe UI", Font.BOLD, 14);
@@ -105,8 +105,8 @@ public class AddRolePanel extends JPanel {
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         pnlButtons.setOpaque(false);
         pnlButtons.setBorder(new EmptyBorder(10, 0, 0, 0));
-        pnlButtons.add(createActionButton("Add", vibrantGreen));
-        pnlButtons.add(createActionButton("Reset", tableHeaderGreen));
+        pnlButtons.add(createActionButton("Add", actionBlue));
+        pnlButtons.add(createActionButton("Reset", tableHeaderBlue));
         pnlButtons.add(createActionButton("Cancel", cancelRed));
         pnlRoleBox.add(pnlButtons, BorderLayout.SOUTH);
 

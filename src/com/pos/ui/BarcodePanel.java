@@ -11,10 +11,10 @@ import java.awt.*;
 public class BarcodePanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color vibrantGreen = new Color(0, 200, 83);
+    private final Color actionBlue = new Color(25, 118, 210);
     private final Color vibrantBlue = new Color(33, 150, 243);
     private final Color outOfStockRed = new Color(211, 47, 47);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color headerBg = primaryBlue;
 
     private JTable table;
@@ -84,7 +84,7 @@ public class BarcodePanel extends JPanel {
         lblBreadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         pnlTopActions.add(lblBreadcrumb, BorderLayout.WEST);
 
-        JButton btnColVisibility = createActionButton("Column Visibility", tableHeaderGreen);
+        JButton btnColVisibility = createActionButton("Column Visibility", tableHeaderBlue);
         btnColVisibility.setPreferredSize(new Dimension(150, 35));
         pnlTopActions.add(btnColVisibility, BorderLayout.EAST);
 
@@ -108,7 +108,7 @@ public class BarcodePanel extends JPanel {
         txtSearch.setPreferredSize(new Dimension(0, 35));
         txtSearch.setForeground(Color.GRAY);
         pnlSearch.add(txtSearch);
-        pnlSearch.add(createActionButton("Search", tableHeaderGreen));
+        pnlSearch.add(createActionButton("Search", tableHeaderBlue));
         pnlSearch.add(createActionButton("Reset", Color.BLACK));
         pnlFilters.add(pnlSearch, BorderLayout.WEST);
 
@@ -146,7 +146,7 @@ public class BarcodePanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(tableHeaderGreen);
+                lbl.setBackground(tableHeaderBlue);
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);
@@ -253,7 +253,7 @@ public class BarcodePanel extends JPanel {
             p.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
             
             String status = value.toString();
-            Color statusColor = status.equals("In Stock") ? vibrantGreen : outOfStockRed;
+            Color statusColor = status.equals("In Stock") ? actionBlue : outOfStockRed;
             
             JLabel lbl = new JLabel(status);
             lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
@@ -275,8 +275,8 @@ public class BarcodePanel extends JPanel {
             JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 12));
             p.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
             
-            JButton btnQr = styleManageButton("QR Code", vibrantGreen);
-            JButton btnBar = styleManageButton("Barcode", vibrantGreen);
+            JButton btnQr = styleManageButton("QR Code", actionBlue);
+            JButton btnBar = styleManageButton("Barcode", actionBlue);
             JButton btnPrint = styleManageButton("Print Item Card", vibrantBlue);
             
             p.add(btnQr);
