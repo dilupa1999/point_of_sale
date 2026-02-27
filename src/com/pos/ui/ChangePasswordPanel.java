@@ -8,9 +8,9 @@ import java.awt.*;
 public class ChangePasswordPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color fieldBg = new Color(245, 245, 250);
+    private final Color actionBlue = new Color(25, 118, 210);
     private final Color cancelRed = new Color(211, 47, 47);
-    private final Color saveGreen = new Color(100, 175, 80);
+    private final Color fieldBg = new Color(245, 245, 250);
     private final Font fontBold14 = new Font("Segoe UI", Font.BOLD, 14);
     private final Font fontPlain13 = new Font("Segoe UI", Font.PLAIN, 13);
 
@@ -115,7 +115,7 @@ public class ChangePasswordPanel extends JPanel {
         gbc.insets = new Insets(40, 0, 0, 0);
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 0));
         pnlButtons.setOpaque(false);
-        pnlButtons.add(createActionButton("Create", saveGreen));
+        pnlButtons.add(createActionButton("Create", actionBlue));
         pnlButtons.add(createActionButton(">Cancel", cancelRed));
         pnlForm.add(pnlButtons, gbc);
 

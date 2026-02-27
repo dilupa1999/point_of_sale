@@ -11,8 +11,8 @@ import java.awt.*;
 public class ExpenseCategoryListPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color headerBlue = new Color(30, 136, 229);
-    private final Color actionGreen = new Color(139, 195, 74);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
+    private final Color actionBlue = new Color(25, 118, 210);
     private final Color disableRed = new Color(211, 47, 47);
 
     private JTable table;
@@ -143,7 +143,7 @@ public class ExpenseCategoryListPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(headerBlue);
+                lbl.setBackground(tableHeaderBlue);
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);

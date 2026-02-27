@@ -11,9 +11,9 @@ import java.awt.*;
 public class ImportCustomerPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color themeBlue = new Color(30, 136, 229);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color cancelRed = new Color(211, 47, 47);
-    private final Color actionGreen = new Color(139, 195, 74); // Keeping green for 'Add Data' or using blue? User said blue theme.
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -116,7 +116,7 @@ public class ImportCustomerPanel extends JPanel {
         gbc.insets = new Insets(10, 0, 0, 0);
         JPanel pnlUploadBtns = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         pnlUploadBtns.setOpaque(false);
-        pnlUploadBtns.add(createActionButton("Import", primaryBlue, 100));
+        pnlUploadBtns.add(createActionButton("Import", actionBlue, 100));
         pnlUploadBtns.add(createActionButton("Cancel", cancelRed, 100));
         pnlUploadDetails.add(pnlUploadBtns, gbc);
 
@@ -134,7 +134,7 @@ public class ImportCustomerPanel extends JPanel {
         btnList.setBorder(new LineBorder(new Color(230, 230, 235)));
         pnlTableActions.add(btnList, BorderLayout.WEST);
 
-        JButton btnAddDatabase = createActionButton("Add Data On Database", themeBlue, 220);
+        JButton btnAddDatabase = createActionButton("Add Data On Database", tableHeaderBlue, 220);
         pnlTableActions.add(btnAddDatabase, BorderLayout.EAST);
 
         // Table
@@ -154,7 +154,7 @@ public class ImportCustomerPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(themeBlue);
+                lbl.setBackground(tableHeaderBlue);
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 10));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);

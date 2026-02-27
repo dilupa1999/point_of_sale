@@ -42,17 +42,9 @@ public class StockPanel extends JPanel {
         JPanel pnlTopLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 15));
         pnlTopLeft.setOpaque(false);
 
-        JButton btnBack = createHeaderButton("<", true);
-        btnBack.addActionListener(e -> mainFrame.showPanel("Dashboard"));
-
-        JButton btnMainPanel = createHeaderButton("Go to Main Panel", false);
-        btnMainPanel.addActionListener(e -> mainFrame.showPanel("Dashboard"));
-
         JButton btnPOS = createHeaderButton("POS", false);
         btnPOS.addActionListener(e -> mainFrame.showPanel("POS"));
 
-        pnlTopLeft.add(btnBack);
-        pnlTopLeft.add(btnMainPanel);
         pnlTopLeft.add(btnPOS);
         pnlTopHeader.add(pnlTopLeft, BorderLayout.WEST);
 

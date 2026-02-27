@@ -11,16 +11,18 @@ public class MainFrame extends JFrame {
     private JPanel mainContent;
     private JButton activeButton; 
     private JPanel pnlSidebar; 
+    private JPanel pnlSidebarContainer;
     private final Color sidebarBg = new Color(245, 245, 250); // Light sidebar
     private final Color activeBlue = new Color(13, 71, 161); // Deep Blue active highlight
     private final Color hoverBg = new Color(235, 237, 245);
-    private final Color footerGreen = new Color(0, 100, 30); // Professional dark green
+    private final Color footerBlue = new Color(13, 71, 161); // Professional blue
     private final Font fontSidebar = new Font("Segoe UI", Font.BOLD, 12);
 
     public MainFrame() {
         setTitle("Retail Supermarket POS - Management System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setMinimumSize(new Dimension(800, 600)); // Enforce minimum size (approx 8*8 inches)
         
         initComponents();
         setupResponsiveness();
@@ -30,7 +32,7 @@ public class MainFrame extends JFrame {
         setLayout(new BorderLayout());
 
         // --- Sidebar (Scrollable) ---
-        JPanel pnlSidebarContainer = new JPanel(new BorderLayout());
+        pnlSidebarContainer = new JPanel(new BorderLayout());
         pnlSidebarContainer.setBackground(sidebarBg);
         pnlSidebarContainer.setPreferredSize(new Dimension(115, 0));
         pnlSidebarContainer.setBorder(new LineBorder(new Color(230, 230, 235), 1));
@@ -73,15 +75,16 @@ public class MainFrame extends JFrame {
         cardLayout = new CardLayout();
         mainContent = new JPanel(cardLayout);
         mainContent.setBackground(Color.WHITE);
+        mainContent.setMinimumSize(new Dimension(768, 768)); // 8 inches * 96 DPI = 768 pixels
 
         // Add Panels
         mainContent.add(new DashboardPanel(), "Dashboard");
         mainContent.add(new POSPanel(), "POS");
         mainContent.add(new ItemsPanel(this), "Items");
-        mainContent.add(new ExportItemsPanel(), "Export");
+        mainContent.add(new ExportItemsPanel(this), "Export");
         mainContent.add(new StockPanel(this), "Stock");
         mainContent.add(new SalesPanel(this), "Sales");
-        mainContent.add(new DueAmountPanel(), "Due");
+        mainContent.add(new DueAmountPanel(this), "Due");
         mainContent.add(new UsersPanel(this), "Users");
         mainContent.add(new CustomerPanel(this), "Customer");
         mainContent.add(new SuppliersPanel(this), "Suppliers");
@@ -129,7 +132,7 @@ public class MainFrame extends JFrame {
 
         // --- Footer ---
         JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        pnlFooter.setBackground(footerGreen);
+        pnlFooter.setBackground(footerBlue);
         pnlFooter.setPreferredSize(new Dimension(0, 35));
         JLabel lblFooterText = new JLabel("2026 \u00a9 All Rights Reserved | Designed and Developed by Silicon Radon Networks (Pvt) Ltd");
         lblFooterText.setForeground(Color.WHITE);
@@ -147,9 +150,19 @@ public class MainFrame extends JFrame {
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
                 int width = getWidth();
+                int height = getHeight();
+                
                 float scale = 1.0f;
-                if (width < 1000) scale = 0.85f;
-                else if (width < 1300) scale = 0.95f;
+                if (width < 850) {
+                    scale = 0.80f;
+                    pnlSidebarContainer.setPreferredSize(new Dimension(85, 0));
+                } else if (width < 1100) {
+                    scale = 0.85f;
+                    pnlSidebarContainer.setPreferredSize(new Dimension(100, 0));
+                } else {
+                    scale = 1.0f;
+                    pnlSidebarContainer.setPreferredSize(new Dimension(115, 0));
+                }
                 
                 updateFontsRecursive(MainFrame.this, scale);
                 revalidate();

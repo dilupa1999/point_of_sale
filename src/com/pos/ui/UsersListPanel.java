@@ -11,8 +11,8 @@ import java.awt.*;
 public class UsersListPanel extends JPanel {
 
     private final Color primaryBlue = new Color(13, 71, 161);
-    private final Color vibrantGreen = new Color(0, 200, 83);
-    private final Color tableHeaderGreen = new Color(100, 175, 80);
+    private final Color actionBlue = new Color(25, 118, 210);
+    private final Color tableHeaderBlue = new Color(21, 101, 192);
     private final Color deactivateRed = new Color(211, 47, 47);
     private final Color headerBg = primaryBlue;
 
@@ -85,11 +85,11 @@ public class UsersListPanel extends JPanel {
 
         JPanel pnlExport = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         pnlExport.setOpaque(false);
-        pnlExport.add(createActionButton("Copy", tableHeaderGreen));
-        pnlExport.add(createActionButton("CSV", tableHeaderGreen));
-        pnlExport.add(createActionButton("Excel", tableHeaderGreen));
-        pnlExport.add(createActionButton("PDF", tableHeaderGreen));
-        pnlExport.add(createActionButton("Column Visibility", tableHeaderGreen));
+        pnlExport.add(createActionButton("Copy", tableHeaderBlue));
+        pnlExport.add(createActionButton("CSV", tableHeaderBlue));
+        pnlExport.add(createActionButton("Excel", tableHeaderBlue));
+        pnlExport.add(createActionButton("PDF", tableHeaderBlue));
+        pnlExport.add(createActionButton("Column Visibility", tableHeaderBlue));
         pnlTopActions.add(pnlExport, BorderLayout.EAST);
 
         pnlMain.add(pnlTopActions, BorderLayout.NORTH);
@@ -111,7 +111,7 @@ public class UsersListPanel extends JPanel {
         txtSearch.setPreferredSize(new Dimension(0, 35));
         txtSearch.setForeground(Color.GRAY);
         pnlSearch.add(txtSearch);
-        pnlSearch.add(createActionButton("Search", tableHeaderGreen));
+        pnlSearch.add(createActionButton("Search", tableHeaderBlue));
         pnlFilters.add(pnlSearch, BorderLayout.WEST);
 
         JPanel pnlEntries = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -147,7 +147,7 @@ public class UsersListPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(tableHeaderGreen);
+                lbl.setBackground(tableHeaderBlue);
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);
@@ -252,7 +252,7 @@ public class UsersListPanel extends JPanel {
             p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 235)));
 
             JButton btnEdit = styleManageButton("Edit", Color.WHITE, Color.GRAY);
-            JButton btnDeactivate = styleManageButton("Deactivate", vibrantGreen, Color.WHITE);
+            JButton btnDeactivate = styleManageButton("Deactivate", actionBlue, Color.WHITE);
             
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(0, 5, 0, 5);
