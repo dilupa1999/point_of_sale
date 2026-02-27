@@ -67,9 +67,10 @@ public class CustomerListPanel extends JPanel {
 
         JPanel pnlTopRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
         pnlTopRight.setOpaque(false);
-        JLabel lblWelcome = new JLabel("<html><div style='text-align: right;'><span style='font-size: 16px; font-weight: bold;'>Good Morning!</span><br>Welcome POS System</div></html>");
+        JLabel lblWelcome = new JLabel(
+                "<html><div style='text-align: right;'><span style='font-size: 16px; font-weight: bold;'>Good Morning!</span><br>Welcome POS System</div></html>");
         lblWelcome.setForeground(Color.WHITE);
-        
+
         JButton btnPower = createHeaderButton("\u23FB", true);
         btnPower.setFont(new Font("Segoe UI", Font.BOLD, 20));
 
@@ -87,7 +88,7 @@ public class CustomerListPanel extends JPanel {
         // Breadcrumbs and Top Actions
         pnlBreadcrumbRow = new JPanel(new BorderLayout());
         pnlBreadcrumbRow.setOpaque(false);
-        
+
         JLabel lblBreadcrumb = new JLabel("Main Panel > Customers > Customers List");
         lblBreadcrumb.setForeground(new Color(100, 100, 100));
         lblBreadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -112,11 +113,26 @@ public class CustomerListPanel extends JPanel {
         pnlSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         pnlSearch.setOpaque(false);
         pnlSearch.add(new JLabel("Search"));
-        JTextField txtSearch = new JTextField("Enter customer name");
+        JTextField txtSearch = new JTextField("");
         txtSearch.setPreferredSize(new Dimension(300, 40));
         txtSearch.setBorder(new LineBorder(new Color(230, 230, 235)));
         pnlSearch.add(txtSearch);
-        pnlSearch.add(createMiniButton("Search", primaryBlue));
+
+        JButton btnSearch = createMiniButton("Search", primaryBlue);
+        pnlSearch.add(btnSearch);
+
+        JButton btnClear = createMiniButton("Clear", new Color(158, 158, 158));
+        pnlSearch.add(btnClear);
+
+        // Add listeners for search
+        btnSearch.addActionListener(e -> loadCustomers(txtSearch.getText().trim()));
+        txtSearch.addActionListener(e -> loadCustomers(txtSearch.getText().trim()));
+
+        btnClear.addActionListener(e -> {
+            txtSearch.setText("");
+            loadCustomers("");
+        });
+
         pnlFilterBar.add(pnlSearch, BorderLayout.WEST);
 
         pnlShowEntries = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -129,8 +145,8 @@ public class CustomerListPanel extends JPanel {
         // Table Section
         JPanel pnlTableSection = new JPanel(new BorderLayout());
         pnlTableSection.setBackground(Color.WHITE);
-        
-        String[] columns = {"#", "CUSTOMER CODE", "CUSTOMER NAME", "MOBILE NUMBER", "ADDRESS", "EMAIL", "MANAGE"};
+
+        String[] columns = { "#", "CUSTOMER CODE", "CUSTOMER NAME", "MOBILE NUMBER", "ADDRESS", "EMAIL", "MANAGE" };
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -149,8 +165,10 @@ public class CustomerListPanel extends JPanel {
         header.setPreferredSize(new Dimension(0, 45));
         header.setDefaultRenderer(new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+                        column);
                 lbl.setBackground(tableHeaderBlue);
                 lbl.setForeground(Color.WHITE);
                 lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -164,10 +182,20 @@ public class CustomerListPanel extends JPanel {
         // Custom Cell Rendering
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 setHorizontalAlignment(SwingConstants.CENTER);
                 setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 235)));
+
+                if (isSelected) {
+                    c.setForeground(Color.BLACK); // Ensure text is visible
+                    c.setBackground(new Color(230, 240, 255)); // Light blue selection background
+                } else {
+                    c.setForeground(Color.DARK_GRAY);
+                    c.setBackground(Color.WHITE);
+                }
+
                 return c;
             }
         });
@@ -175,20 +203,20 @@ public class CustomerListPanel extends JPanel {
         table.getColumnModel().getColumn(6).setCellRenderer(new ManageRenderer());
         table.getColumnModel().getColumn(6).setPreferredWidth(170);
         table.getColumnModel().getColumn(6).setMinWidth(160);
-        addSampleData();
+        loadCustomers("");
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(new LineBorder(new Color(230, 230, 235)));
         scrollPane.getViewport().setBackground(Color.WHITE);
-        
+
         pnlTableSection.add(scrollPane, BorderLayout.CENTER);
-        
+
         // Assemble Center
         JPanel pnlCenter = new JPanel(new BorderLayout());
         pnlCenter.setBackground(Color.WHITE);
         pnlCenter.add(pnlFilterBar, BorderLayout.NORTH);
         pnlCenter.add(pnlTableSection, BorderLayout.CENTER);
-        
+
         pnlMain.add(pnlCenter, BorderLayout.CENTER);
 
         add(pnlMain, BorderLayout.CENTER);
@@ -199,7 +227,7 @@ public class CustomerListPanel extends JPanel {
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
                 int width = getWidth();
-                
+
                 // Responsiveness for Breadcrumb row (Export buttons)
                 if (width < 1100) {
                     pnlBreadcrumbRow.remove(pnlExportActions);
@@ -207,7 +235,7 @@ public class CustomerListPanel extends JPanel {
                     pnlBreadcrumbRow.add(new JLabel("Main Panel > Customers > Customers List"));
                     pnlBreadcrumbRow.getComponent(0).setForeground(new Color(100, 100, 100));
                     pnlBreadcrumbRow.add(pnlExportActions);
-                    ((FlowLayout)pnlExportActions.getLayout()).setAlignment(FlowLayout.LEFT);
+                    ((FlowLayout) pnlExportActions.getLayout()).setAlignment(FlowLayout.LEFT);
                 } else {
                     pnlBreadcrumbRow.removeAll();
                     pnlBreadcrumbRow.setLayout(new BorderLayout());
@@ -215,7 +243,7 @@ public class CustomerListPanel extends JPanel {
                     lblB.setForeground(new Color(100, 100, 100));
                     pnlBreadcrumbRow.add(lblB, BorderLayout.WEST);
                     pnlBreadcrumbRow.add(pnlExportActions, BorderLayout.EAST);
-                    ((FlowLayout)pnlExportActions.getLayout()).setAlignment(FlowLayout.RIGHT);
+                    ((FlowLayout) pnlExportActions.getLayout()).setAlignment(FlowLayout.RIGHT);
                 }
 
                 // Responsiveness for Filter bar (Search & Show Entries)
@@ -225,25 +253,68 @@ public class CustomerListPanel extends JPanel {
                     pnlFilterBar.setLayout(new GridLayout(2, 1, 0, 10));
                     pnlFilterBar.add(pnlSearch);
                     pnlFilterBar.add(pnlShowEntries);
-                    ((FlowLayout)pnlShowEntries.getLayout()).setAlignment(FlowLayout.LEFT);
+                    ((FlowLayout) pnlShowEntries.getLayout()).setAlignment(FlowLayout.LEFT);
                 } else {
                     pnlFilterBar.remove(pnlSearch);
                     pnlFilterBar.remove(pnlShowEntries);
                     pnlFilterBar.setLayout(new BorderLayout());
                     pnlFilterBar.add(pnlSearch, BorderLayout.WEST);
                     pnlFilterBar.add(pnlShowEntries, BorderLayout.EAST);
-                    ((FlowLayout)pnlShowEntries.getLayout()).setAlignment(FlowLayout.RIGHT);
+                    ((FlowLayout) pnlShowEntries.getLayout()).setAlignment(FlowLayout.RIGHT);
                 }
-                
+
                 revalidate();
                 repaint();
             }
         });
     }
 
-    private void addSampleData() {
-        tableModel.addRow(new Object[]{"1", "1", "Customer", "0786835563", "Elpitiya", "Customer@gmail.com", ""});
-        tableModel.addRow(new Object[]{"2", "2", "Shanthi", "0761234567", "27 Dam Street, 12", "shanthi@gmail.com", ""});
+    public void loadCustomers(String query) {
+        tableModel.setRowCount(0);
+        try {
+            String sql;
+            if (query == null || query.isEmpty()) {
+                sql = "SELECT * FROM `customers` ORDER BY id DESC LIMIT 100";
+            } else {
+                String safeQuery = query.replace("'", "''");
+                sql = "SELECT * FROM `customers` WHERE LOWER(`customer_name`) LIKE LOWER('%" + safeQuery + "%') "
+                        + "OR LOWER(`customer_code`) LIKE LOWER('%" + safeQuery + "%') "
+                        + "OR `contact_number` LIKE '%" + safeQuery + "%' "
+                        + "ORDER BY id DESC LIMIT 100";
+            }
+            java.sql.ResultSet rs = model.MySQL.execute(sql);
+            int rowNum = 1;
+            while (rs.next()) {
+                String code = rs.getString("customer_code") != null ? rs.getString("customer_code") : "";
+                String name = rs.getString("customer_name") != null ? rs.getString("customer_name") : "";
+                String mobile = rs.getString("contact_number") != null ? rs.getString("contact_number") : "";
+
+                String address = "";
+                String line1 = rs.getString("address_line_1");
+                String city = rs.getString("city_name");
+                if (line1 != null && !line1.isEmpty())
+                    address += line1;
+                if (city != null && !city.isEmpty()) {
+                    if (!address.isEmpty())
+                        address += ", ";
+                    address += city;
+                }
+
+                String email = rs.getString("email") != null ? rs.getString("email") : "";
+
+                tableModel.addRow(new Object[] {
+                        String.valueOf(rowNum++),
+                        code,
+                        name,
+                        mobile,
+                        address,
+                        email,
+                        "" // Manage column is handled by ManageRenderer
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private JButton createHeaderButton(String text, boolean isCircle) {
@@ -296,14 +367,15 @@ public class CustomerListPanel extends JPanel {
 
     class ManageRenderer extends DefaultTableCellRenderer {
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+                int row, int column) {
             JPanel p = new JPanel(new GridBagLayout());
             p.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
             p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 235)));
 
             JButton btnEdit = new JButton("Edit");
             styleManageButton(btnEdit, Color.WHITE, Color.DARK_GRAY);
-            
+
             JButton btnDisable = new JButton("Disable");
             styleManageButton(btnDisable, disableRed, Color.WHITE);
 
@@ -311,7 +383,7 @@ public class CustomerListPanel extends JPanel {
             gbc.insets = new Insets(0, 5, 0, 5);
             p.add(btnEdit, gbc);
             p.add(btnDisable, gbc);
-            
+
             return p;
         }
 

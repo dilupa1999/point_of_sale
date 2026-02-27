@@ -120,30 +120,57 @@ public class SyncService {
                             String customerCode = customer.get("customer_code").isJsonNull() ? null
                                     : customer.get("customer_code").getAsString();
 
-                            // Use ON DUPLICATE KEY UPDATE with customer_code as a fallback or anchor
-                            String sql = "INSERT INTO `customers` (`id`, `customer_name`, `contact_number`, `email`, `city_name`, `address_line_1`, `due_amount`, `customer_code`, `is_synced`) "
-                                    +
-                                    "VALUES (" + customer.get("id").getAsInt() + ", "
-                                    + "'" + customer.get("customer_name").getAsString().replace("'", "''") + "', "
-                                    + "'" + customer.get("contact_number").getAsString().replace("'", "''") + "', "
-                                    + (customer.get("email").isJsonNull() ? "NULL"
-                                            : "'" + customer.get("email").getAsString().replace("'", "''") + "'")
-                                    + ", "
-                                    + (customer.get("city").isJsonNull() ? "NULL"
-                                            : "'" + customer.get("city").getAsString().replace("'", "''") + "'")
-                                    + ", "
-                                    + (customer.get("address").isJsonNull() ? "NULL"
-                                            : "'" + customer.get("address").getAsString().replace("'", "''") + "'")
-                                    + ", "
-                                    + customer.get("due_amount").getAsDouble() + ", "
-                                    + (customerCode == null ? "NULL" : "'" + customerCode.replace("'", "''") + "'")
-                                    + ", 1) " +
-                                    "ON DUPLICATE KEY UPDATE `customer_name`=VALUES(`customer_name`), `contact_number`=VALUES(`contact_number`), "
-                                    +
-                                    "`email`=VALUES(`email`), `city_name`=VALUES(`city_name`), `address_line_1`=VALUES(`address_line_1`), "
-                                    +
-                                    "`due_amount`=VALUES(`due_amount`), `is_synced`=1";
-                            MySQL.execute(sql);
+                            int serverId = customer.get("id").getAsInt();
+                            String name = customer.get("customer_name").isJsonNull() ? ""
+                                    : customer.get("customer_name").getAsString().replace("'", "''");
+                            String contact = customer.get("contact_number").isJsonNull() ? ""
+                                    : customer.get("contact_number").getAsString().replace("'", "''");
+
+                            String email = customer.get("email").isJsonNull() ? "NULL"
+                                    : "'" + customer.get("email").getAsString().replace("'", "''") + "'";
+                            String city = customer.get("city").isJsonNull() ? "NULL"
+                                    : "'" + customer.get("city").getAsString().replace("'", "''") + "'";
+                            String address = customer.get("address").isJsonNull() ? "NULL"
+                                    : "'" + customer.get("address").getAsString().replace("'", "''") + "'";
+
+                            double dueAmount = customer.get("due_amount").isJsonNull() ? 0
+                                    : customer.get("due_amount").getAsDouble();
+                            String cCodeStr = (customerCode == null ? "NULL"
+                                    : "'" + customerCode.replace("'", "''") + "'");
+
+                            if (customerCode != null && !customerCode.isEmpty()) {
+                                java.sql.ResultSet rs = MySQL.execute(
+                                        "SELECT `id` FROM `customers` WHERE `customer_code` = '" + customerCode + "'");
+                                if (rs.next()) {
+                                    int localId = rs.getInt("id");
+                                    MySQL.execute("UPDATE `customers` SET `customer_name`='" + name
+                                            + "', `contact_number`='" + contact + "', `email`=" + email
+                                            + ", `city_name`=" + city + ", `address_line_1`=" + address
+                                            + ", `due_amount`=" + dueAmount + ", `is_synced`=1 WHERE `id`=" + localId);
+                                } else {
+                                    // Safe insert without ID to avert collision
+                                    MySQL.execute(
+                                            "INSERT INTO `customers` (`customer_name`, `contact_number`, `email`, `city_name`, `address_line_1`, `due_amount`, `customer_code`, `is_synced`) VALUES ('"
+                                                    + name + "', '" + contact + "', " + email + ", " + city + ", "
+                                                    + address + ", " + dueAmount + ", " + cCodeStr + ", 1)");
+                                }
+                            } else {
+                                // Fallback if no customer code (e.g. Guest ID 1)
+                                java.sql.ResultSet rs = MySQL
+                                        .execute("SELECT `id` FROM `customers` WHERE `id` = " + serverId);
+                                if (rs.next()) {
+                                    MySQL.execute("UPDATE `customers` SET `customer_name`='" + name
+                                            + "', `contact_number`='" + contact + "', `email`=" + email
+                                            + ", `city_name`=" + city + ", `address_line_1`=" + address
+                                            + ", `due_amount`=" + dueAmount + ", `is_synced`=1 WHERE `id`=" + serverId);
+                                } else {
+                                    MySQL.execute(
+                                            "INSERT INTO `customers` (`id`, `customer_name`, `contact_number`, `email`, `city_name`, `address_line_1`, `due_amount`, `customer_code`, `is_synced`) VALUES ("
+                                                    + serverId + ", '" + name + "', '" + contact + "', " + email + ", "
+                                                    + city + ", " + address + ", " + dueAmount + ", " + cCodeStr
+                                                    + ", 1)");
+                                }
+                            }
                         }
                     }
                 }
@@ -197,33 +224,10 @@ public class SyncService {
                     if (response != null
                             && (response.contains("\"success\":true") || response.contains("\"success\": true"))) {
 
-                        // Extract server-generated ID for reconciliation
                         try {
-                            JsonObject respObj = new Gson().fromJson(response, JsonObject.class);
-                            if (respObj.has("data") && !respObj.get("data").isJsonNull()) {
-                                JsonObject data = respObj.getAsJsonObject("data");
-                                int serverId = data.get("id").getAsInt();
-
-                                if (serverId != localId) {
-                                    System.out.println("Reconciling ID: Local " + localId + " -> Server " + serverId);
-                                    // Update customers table ID (needs to be done carefully due to PK)
-                                    // First, update foreign keys to avoid orphan records during the swap if we were
-                                    // to delete/re-insert,
-                                    // but MySQL lets us update PK if no conflicts.
-                                    MySQL.execute("UPDATE `sales` SET `customers_id` = " + serverId
-                                            + " WHERE `customers_id` = " + localId);
-                                    MySQL.execute("UPDATE `customers` SET `id` = " + serverId
-                                            + ", `is_synced` = 1 WHERE `id` = " + localId);
-                                } else {
-                                    MySQL.execute("UPDATE `customers` SET `is_synced` = 1 WHERE `id` = " + localId);
-                                }
-                            } else {
-                                MySQL.execute("UPDATE `customers` SET `is_synced` = 1 WHERE `id` = " + localId);
-                            }
-                        } catch (Exception exresp) {
-                            System.err.println(
-                                    "Error parsing sync response for ID reconciliation: " + exresp.getMessage());
                             MySQL.execute("UPDATE `customers` SET `is_synced` = 1 WHERE `id` = " + localId);
+                        } catch (Exception exresp) {
+                            System.err.println("Error marking customer as synced: " + exresp.getMessage());
                         }
 
                         System.out.println("Customer " + localId + " synced successfully.");
